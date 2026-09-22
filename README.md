@@ -18,6 +18,9 @@ output of a model inherits all the failure modes it is supposed to guard
 against, plus latency and cost. These scanners answer in microseconds with
 behavior you can read in the source.
 
+Migrating off llm-guard? See [the migration guide](docs/migrating-from-llm-guard.md)
+for a scanner-by-scanner mapping, including what is and is not covered.
+
 ## Quickstart
 
 ```bash
