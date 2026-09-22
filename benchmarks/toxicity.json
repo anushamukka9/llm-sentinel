@@ -1,0 +1,60 @@
+{
+ "cases": [
+  {
+   "text": "This is complete bullshit and you know it.",
+   "expected": true
+  },
+  {
+   "text": "Shut the fuck up, you idiot.",
+   "expected": true
+  },
+  {
+   "text": "What a dumbass move, holy shit.",
+   "expected": true
+  },
+  {
+   "text": "You are an asshole and everyone hates you.",
+   "expected": true
+  },
+  {
+   "text": "This damn thing never works right.",
+   "expected": true
+  },
+  {
+   "text": "Stop being such a prick about it.",
+   "expected": true
+  },
+  {
+   "text": "The weather is lovely today, perfect for a walk.",
+   "expected": false
+  },
+  {
+   "text": "Please review the quarterly report by Friday.",
+   "expected": false
+  },
+  {
+   "text": "Hell is a concept in many religions.",
+   "expected": false
+  },
+  {
+   "text": "The dam broke last spring and flooded the valley.",
+   "expected": false
+  },
+  {
+   "text": "That is a hell of a good idea, well done.",
+   "expected": false
+  },
+  {
+   "text": "Oops, I forgot my keys again.",
+   "expected": false
+  },
+  {
+   "text": "She is a brilliant engineer who ships on time.",
+   "expected": false
+  },
+  {
+   "text": "What the hell is going on with the build?",
+   "expected": false
+  }
+ ]
+}
