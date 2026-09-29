@@ -126,6 +126,20 @@ from llm_sentinel.adapters.langchain import SentinelCallbackHandler, guard_runna
 safe_chain = guard_runnable(chain, vault)
 ```
 
+## Examples
+
+Runnable programs in [`examples/`](examples/), each one self-contained:
+
+- `fastapi_app.py`: a chat API guarded by `SentinelMiddleware`, with
+  block and redact modes (`pip install "llm-sentinel[fastapi]" uvicorn`)
+- `langchain_chain.py`: a chain wrapped in `guard_runnable`, plus the
+  callback-handler style, running offline on a fake model
+  (`pip install "llm-sentinel[langchain]"`)
+- `redact_pipeline.py`: a shell-friendly scrubber, stdin/file in,
+  redacted text out, with a `--strict` mode for CI
+
+See `examples/README.md` for the exact commands.
+
 ## Honest limitations
 
 - Pattern matching is not understanding. Novel phrasings, non-English
