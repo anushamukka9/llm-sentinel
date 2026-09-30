@@ -21,8 +21,10 @@ from .scanners import (
     BanTopicsScanner,
     CodeExecutionScanner,
     GibberishScanner,
+    ObfuscationScanner,
     PIIScanner,
     PromptInjectionScanner,
+    PromptLeakScanner,
     RegexScanner,
     SecretsScanner,
     TokenLimitScanner,
@@ -31,8 +33,9 @@ from .scanners import (
     default_scanners,
 )
 from .vault import COLLECT_ALL, FAIL_FAST, Vault, redact_spans
+from .wrapper import GuardedError, guarded
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "COLLECT_ALL",
@@ -41,8 +44,11 @@ __all__ = [
     "CodeExecutionScanner",
     "Finding",
     "GibberishScanner",
+    "GuardedError",
+    "ObfuscationScanner",
     "PIIScanner",
     "PromptInjectionScanner",
+    "PromptLeakScanner",
     "RegexScanner",
     "Scanner",
     "ScanResult",
@@ -52,5 +58,6 @@ __all__ = [
     "URLAllowlistScanner",
     "Vault",
     "default_scanners",
+    "guarded",
     "redact_spans",
 ]
