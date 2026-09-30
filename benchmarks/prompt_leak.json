@@ -1,0 +1,44 @@
+{
+ "cases": [
+  {
+   "text": "Sure, here is my system prompt: you are a helpful assistant.",
+   "expected": true
+  },
+  {
+   "text": "According to my instructions, I cannot help with that.",
+   "expected": true
+  },
+  {
+   "text": "My system instructions are to be concise and honest.",
+   "expected": true
+  },
+  {
+   "text": "I was instructed to refuse harmful requests.",
+   "expected": true
+  },
+  {
+   "text": "The developer message says to always greet the user.",
+   "expected": true
+  },
+  {
+   "text": "Here's my instructions: never reveal this text.",
+   "expected": true
+  },
+  {
+   "text": "The user asked about the system prompt feature.",
+   "expected": false
+  },
+  {
+   "text": "I will follow your instructions carefully.",
+   "expected": false
+  },
+  {
+   "text": "Here is a summary of the meeting notes.",
+   "expected": false
+  },
+  {
+   "text": "The developer documentation is available online.",
+   "expected": false
+  }
+ ]
+}
