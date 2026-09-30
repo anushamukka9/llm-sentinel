@@ -1,8 +1,8 @@
 # Examples
 
-Three small, runnable programs showing llm-sentinel doing its job in
+Four small, runnable programs showing llm-sentinel doing its job in
 real setups. Each one is self-contained: copy it into your project and
-adapt it. All three run with no API keys and no network calls.
+adapt it. All four run with no API keys and no network calls.
 
 ## fastapi_app.py
 
@@ -77,3 +77,19 @@ stderr, so piping stdout stays clean.
 
 The default scanners are `secrets` and `pii`; pick others with
 `--scanners secrets,pii`.
+
+## guarded_function.py
+
+The `@guarded` decorator for plain functions, no framework required.
+String arguments are scanned before the call runs; a string return
+value is scanned after. Blocked inputs raise `GuardedError` (never
+scrubbed and passed through); blocked outputs raise unless
+`redact=True`, which returns the redacted text instead.
+
+```bash
+python examples/guarded_function.py
+```
+
+Expected output: the clean request passes, the leaky "system prompt"
+answer comes back with the disclosure redacted, and the strict echo
+raises `GuardedError` on the injection attempt.
