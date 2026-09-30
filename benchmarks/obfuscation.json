@@ -1,0 +1,52 @@
+{
+ "cases": [
+  {
+   "text": "pay\u200bpal invoice",
+   "expected": true
+  },
+  {
+   "text": "hello\u200dworld",
+   "expected": true
+  },
+  {
+   "text": "click \u202ehere for details",
+   "expected": true
+  },
+  {
+   "text": "total\u0007due today",
+   "expected": true
+  },
+  {
+   "text": "run \\u0041\\u0042 now",
+   "expected": true
+  },
+  {
+   "text": "send the report to \u0430dmin@ex\u0430mple.com today please",
+   "expected": true
+  },
+  {
+   "text": "payload: aB3xK9mQ2vL7pR4tY8wZ1cN6bV5dF0gHj=aB3xK9mQ2vL7pR4tY8wZ1cN6bV5dF0gHj=",
+   "expected": true
+  },
+  {
+   "text": "The meeting is at 3pm in room 402.",
+   "expected": false
+  },
+  {
+   "text": "Please review the attached invoice and let me know.",
+   "expected": false
+  },
+  {
+   "text": "Caf\u00e9 menu: cr\u00e8me br\u00fbl\u00e9e",
+   "expected": false
+  },
+  {
+   "text": "The Greek salad was excellent, highly recommended.",
+   "expected": false
+  },
+  {
+   "text": "The total is 42 dollars for the invoice dated Monday.",
+   "expected": false
+  }
+ ]
+}
