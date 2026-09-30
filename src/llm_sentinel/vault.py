@@ -29,14 +29,26 @@ FAIL_FAST = "fail_fast"
 _MODES = (COLLECT_ALL, FAIL_FAST)
 
 
-def redact_spans(text: str, findings: Sequence[Finding]) -> str:
-    """Replace every finding span with a ``[REDACTED:<SCANNER>]`` placeholder.
+def redact_spans(
+    text: str,
+    findings: Sequence[Finding],
+    placeholders: dict[str, str] | None = None,
+) -> str:
+    """Replace every finding span with a placeholder.
+
+    The default placeholder is ``[REDACTED:<SCANNER>]``. ``placeholders``
+    maps scanner names to replacement text, e.g.
+    ``{"pii": "[CONTACT]"}``; a scanner without an entry keeps its
+    default.
 
     Spans are applied from the end of the text backwards so offsets stay
     valid. Overlapping spans collapse into the outermost one.
     """
     spans = sorted(
-        ((f.start, f.end, f.scanner.upper()) for f in findings),
+        (
+            (f.start, f.end, (placeholders or {}).get(f.scanner, f"[REDACTED:{f.scanner.upper()}]"))
+            for f in findings
+        ),
         key=lambda s: (s[0], -s[1]),
     )
     merged: list[tuple[int, int, str]] = []
@@ -46,7 +58,7 @@ def redact_spans(text: str, findings: Sequence[Finding]) -> str:
         merged.append((start, end, label))
     out = text
     for start, end, label in reversed(merged):
-        out = out[:start] + f"[REDACTED:{label}]" + out[end:]
+        out = out[:start] + label + out[end:]
     return out
 
 
@@ -71,6 +83,7 @@ class Vault:
         mode: str = COLLECT_ALL,
         thresholds: dict[str, float] | None = None,
         default_threshold: float = 0.5,
+        placeholders: dict[str, str] | None = None,
     ) -> None:
         if mode not in _MODES:
             raise ValueError(f"mode must be one of {_MODES}, got {mode!r}")
@@ -78,6 +91,50 @@ class Vault:
         self.mode = mode
         self.thresholds = dict(thresholds or {})
         self.default_threshold = default_threshold
+        self.placeholders = dict(placeholders or {})
+
+    @classmethod
+    def from_dict(cls, config: dict) -> Vault:
+        """Build a Vault from a plain dict (config files, feature flags).
+
+        Example:
+            config = {
+                "mode": "fail_fast",
+                "default_threshold": 0.6,
+                "scanners": [
+                    "prompt_injection",
+                    {"name": "ban_topics", "kwargs": {"topics": ["politics"]}},
+                    {"name": "secrets", "threshold": 0.9},
+                ],
+                "thresholds": {"pii": 0.7},
+                "placeholders": {"pii": "[CONTACT]"},
+            }
+            vault = Vault.from_dict(config)
+
+        A scanner entry is either a registered name or a dict with ``name``
+        plus optional ``kwargs`` (passed to the scanner constructor) and
+        ``threshold``. Unknown names raise ValueError listing the registry.
+        """
+        from .scanners import SCANNER_REGISTRY
+
+        thresholds: dict[str, float] = dict(config.get("thresholds", {}))
+        scanners = []
+        for spec in config.get("scanners", []):
+            entry = {"name": spec} if isinstance(spec, str) else dict(spec)
+            name = entry.get("name")
+            if name not in SCANNER_REGISTRY:
+                raise ValueError(f"unknown scanner {name!r}; available: {sorted(SCANNER_REGISTRY)}")
+            scanner = SCANNER_REGISTRY[name](**entry.get("kwargs", {}))
+            scanners.append(scanner)
+            if "threshold" in entry:
+                thresholds[scanner.name] = entry["threshold"]
+        return cls(
+            scanners,
+            mode=config.get("mode", COLLECT_ALL),
+            thresholds=thresholds,
+            default_threshold=config.get("default_threshold", 0.5),
+            placeholders=config.get("placeholders"),
+        )
 
     def add(self, scanner: Scanner, *, threshold: float | None = None) -> Vault:
         """Append a scanner. Returns self so calls chain."""
@@ -98,7 +155,7 @@ class Vault:
                 break
         findings.sort(key=lambda f: f.score, reverse=True)
         blocked = any(f.score >= self.threshold_for(f.scanner) for f in findings)
-        redacted = redact_spans(text, findings) if redact else None
+        redacted = redact_spans(text, findings, self.placeholders) if redact else None
         return ScanResult(text=text, findings=findings, blocked=blocked, redacted_text=redacted)
 
     def check(self, text: str) -> bool:
