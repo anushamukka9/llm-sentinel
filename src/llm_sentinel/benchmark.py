@@ -26,8 +26,10 @@ from .scanners import (
     BanTopicsScanner,
     CodeExecutionScanner,
     GibberishScanner,
+    ObfuscationScanner,
     PIIScanner,
     PromptInjectionScanner,
+    PromptLeakScanner,
     RegexScanner,
     SecretsScanner,
     TokenLimitScanner,
@@ -53,6 +55,8 @@ FACTORIES = {
         forbidden=[r"\bclassified\b"],
         required=[r"\bhello\b"],
     ),
+    "obfuscation": ObfuscationScanner,
+    "prompt_leak": PromptLeakScanner,
 }
 
 
