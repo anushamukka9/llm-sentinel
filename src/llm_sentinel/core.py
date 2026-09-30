@@ -74,6 +74,12 @@ class Scanner(Protocol):
 
     A scanner is a pure function over text: no network, no model calls,
     no side effects. ``scan`` must be safe to call from any thread.
+
+    The Vault normalizes text before scanning (zero-width stripping,
+    NFKC, homoglyph mapping). If your scanner inspects the raw text for
+    the very tricks normalization removes (like ObfuscationScanner
+    does), set the class attribute ``normalize_input = False`` and the
+    Vault will pass it the original text untouched.
     """
 
     name: str

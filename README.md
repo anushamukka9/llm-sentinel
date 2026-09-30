@@ -61,6 +61,32 @@ anymore.
 result = vault.scan(model_output)
 ```
 
+## Normalization
+
+Before scanning, the Vault normalizes the text: zero-width characters
+are stripped, fullwidth forms are folded (NFKC), and common cross-script
+homoglyphs are mapped to Latin. This defeats the cheapest evasion
+tricks, like slipping a zero-width space into "ignore". Finding offsets
+are translated back to your original text, so redaction still works on
+what you passed in.
+
+```python
+from llm_sentinel import normalize_text
+
+normalize_text("ig\u200bnore")  # "ignore"
+
+# Opt out if you normalize yourself or need raw offsets:
+raw_vault = Vault(default_scanners(), normalize=False)
+```
+
+Two things to know. The confusables table is small and curated, not the
+full Unicode list: it raises the bar, it does not remove it. And the
+`obfuscation` scanner opts itself out of normalization
+(`normalize_input = False`), because it detects the very tricks
+normalization removes. Run both in one Vault and each gets the text it
+needs: the tripwire sees the raw attempt, the other scanners see the
+cleaned text.
+
 ## Scanners
 
 | Scanner | What it catches |
@@ -86,7 +112,9 @@ Two scanners stay out of `default_scanners()` on purpose:
 - `obfuscation`: multilingual text trips its heuristics (accents are fine,
   but Cyrillic/Greek runs and stray control chars in non-English text are
   not). Opt in when your traffic is mostly ASCII and you want the tripwire:
-  `Vault(default_scanners() + [ObfuscationScanner()])`.
+  `Vault(default_scanners() + [ObfuscationScanner()])`. It opts out of the
+  Vault's normalization pass so it still sees the raw tricks; the other
+  scanners in the same Vault get the normalized text.
 - `prompt_leak`: it is an output-side scanner; the default set is the
   input-side set. Add it when you scan model output:
   `Vault(default_scanners() + [PromptLeakScanner()])`.
@@ -169,6 +197,8 @@ Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are
 small and hand-written. Real attacks are more creative than any corpus.
 If you evaluate against your own data, please contribute the cases back.
+Methodology, what the numbers do not measure, and how to add cases:
+[docs/benchmarks.md](docs/benchmarks.md).
 
 ## Policy eval
 
@@ -235,8 +265,11 @@ See `examples/README.md` for the exact commands.
 ## Honest limitations
 
 - Pattern matching is not understanding. Novel phrasings, non-English
-  attacks, and heavy obfuscation (zero-width chars, homoglyphs) will get
-  through the prompt-injection scanner.
+  attacks, and paraphrased overrides will get through the
+  prompt-injection scanner. The cheap typographic tricks (zero-width
+  characters, fullwidth lookalikes, common homoglyphs) are normalized
+  away by the Vault before scanning; heavy leetspeak and full Unicode
+  confusable coverage are still out of scope.
 - The secrets entropy heuristic misses short secrets and flags some
   non-secrets. In-house key formats need your own patterns.
 - PII coverage is narrow by design (email, phone, SSN, card). Names,

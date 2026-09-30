@@ -17,6 +17,7 @@ Quickstart:
 """
 
 from .core import Finding, Scanner, ScanResult
+from .normalize import normalize_text, normalize_with_map
 from .scanners import (
     BanTopicsScanner,
     CodeExecutionScanner,
@@ -35,7 +36,7 @@ from .scanners import (
 from .vault import COLLECT_ALL, FAIL_FAST, Vault, redact_spans
 from .wrapper import GuardedError, guarded
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "COLLECT_ALL",
@@ -59,5 +60,7 @@ __all__ = [
     "Vault",
     "default_scanners",
     "guarded",
+    "normalize_text",
+    "normalize_with_map",
     "redact_spans",
 ]

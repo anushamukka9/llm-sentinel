@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llm-sentinel"
-version = "0.2.0"
+version = "0.3.0"
 description = "Deterministic guardrails for LLM apps: scan prompts and outputs for prompt injection, secrets, PII, toxicity and more. No model calls."
 readme = "README.md"
 license = { text = "MIT" }
