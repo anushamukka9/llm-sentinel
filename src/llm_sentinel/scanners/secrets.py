@@ -53,8 +53,8 @@ _NAMED: list[tuple[str, re.Pattern[str], float]] = [
     (
         "Generic secret assignment",
         re.compile(
-            r"(?i)\b(api[_-]?key|secret[_-]?key|client[_-]?secret|"
-            r"access[_-]?token|private[_-]?key|password|passwd|pwd)\b"
+            r"(?i)\b(api[ _-]?key|secret[ _-]?key|client[ _-]?secret|"
+            r"access[ _-]?token|private[ _-]?key|password|passwd|pwd)\b"
             r"\s*[:=]\s*['\"]?([A-Za-z0-9_\-+/=]{12,})['\"]?",
         ),
         0.85,

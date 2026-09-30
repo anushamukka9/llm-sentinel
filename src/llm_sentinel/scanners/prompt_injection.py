@@ -8,8 +8,10 @@ markers ("DAN", "developer mode"), and a few common encoding tricks.
 Limitations, stated plainly:
 - This is pattern matching, not understanding. Novel phrasings, non-English
   attacks, and paraphrased overrides will sail through.
-- Obfuscation (zero-width characters, homoglyphs, heavy leetspeak) defeats
-  most of these patterns. A normalizer for that is on the roadmap, not here.
+- The Vault normalizes text before scanning (zero-width characters are
+  stripped, fullwidth forms folded, common homoglyphs mapped), so the
+  cheap typographic tricks fail. Heavy leetspeak, full Unicode confusable
+  coverage, and meaning-level evasion are still out of scope.
 - Legitimate text can trip it: a security article *about* prompt injection,
   or a user quoting an attack, will flag. That is expected; pair with a
   human review step or an allowlist when false positives hurt.

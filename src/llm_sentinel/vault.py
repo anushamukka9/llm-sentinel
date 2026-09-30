@@ -10,6 +10,19 @@ The block decision is per-scanner threshold: a finding blocks the text when
 its score is at or above that scanner's threshold. Thresholds default to
 0.5 and can be tuned per scanner.
 
+Before scanning, the Vault normalizes the text (``normalize=True``, the
+default): zero-width characters are stripped, fullwidth forms are folded
+by NFKC, and common cross-script homoglyphs are mapped to Latin. This
+defeats the cheapest typographic evasion tricks. Finding offsets are
+translated back to the original text, so findings and redaction always
+refer to what you passed in. Pass ``normalize=False`` if you need raw
+offsets or you handle normalization yourself.
+
+A scanner can opt out of normalization for itself by setting the class
+attribute ``normalize_input = False``. ObfuscationScanner does this: it
+detects the very tricks normalization removes, so it must see the raw
+text. Its findings need no remapping.
+
 Redaction replaces each finding span with a placeholder such as
 ``[REDACTED:SECRET]``. It is a lossy, best-effort transform: it removes the
 matched characters, not the meaning around them. Do not rely on it alone
@@ -22,6 +35,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from .core import Finding, Scanner, ScanResult
+from .normalize import normalize_with_map
 
 COLLECT_ALL = "collect_all"
 FAIL_FAST = "fail_fast"
@@ -62,6 +76,27 @@ def redact_spans(
     return out
 
 
+def _remap_finding(finding: Finding, original_text: str, index_map: list[int]) -> Finding:
+    """Translate a finding's offsets from normalized space to the original.
+
+    The span widens to cover any stripped characters (zero-width tricks)
+    that fell inside the match, so redaction removes the evasion along
+    with the match.
+    """
+    if not (0 <= finding.start < finding.end <= len(index_map)):
+        return finding  # defensive: never mislabel, leave as-is
+    start = index_map[finding.start]
+    end = index_map[finding.end - 1] + 1
+    return Finding(
+        scanner=finding.scanner,
+        score=finding.score,
+        start=start,
+        end=end,
+        matched_text=original_text[start:end],
+        message=finding.message,
+    )
+
+
 class Vault:
     """A policy made of scanners.
 
@@ -84,6 +119,7 @@ class Vault:
         thresholds: dict[str, float] | None = None,
         default_threshold: float = 0.5,
         placeholders: dict[str, str] | None = None,
+        normalize: bool = True,
     ) -> None:
         if mode not in _MODES:
             raise ValueError(f"mode must be one of {_MODES}, got {mode!r}")
@@ -92,6 +128,7 @@ class Vault:
         self.thresholds = dict(thresholds or {})
         self.default_threshold = default_threshold
         self.placeholders = dict(placeholders or {})
+        self.normalize = normalize
 
     @classmethod
     def from_dict(cls, config: dict) -> Vault:
@@ -134,6 +171,7 @@ class Vault:
             thresholds=thresholds,
             default_threshold=config.get("default_threshold", 0.5),
             placeholders=config.get("placeholders"),
+            normalize=config.get("normalize", True),
         )
 
     def add(self, scanner: Scanner, *, threshold: float | None = None) -> Vault:
@@ -148,8 +186,17 @@ class Vault:
 
     def scan(self, text: str, *, redact: bool = False) -> ScanResult:
         findings: list[Finding] = []
+        scan_text = text
+        index_map: list[int] | None = None
+        if self.normalize:
+            scan_text, index_map = normalize_with_map(text)
         for scanner in self.scanners:
-            found = scanner.scan(text)
+            # Scanners that opted out (normalize_input = False) see the
+            # raw text; everyone else sees the normalized copy.
+            raw = getattr(scanner, "normalize_input", True) is False
+            found = scanner.scan(text if raw else scan_text)
+            if index_map is not None and not raw and scan_text != text:
+                found = [_remap_finding(f, text, index_map) for f in found]
             findings.extend(found)
             if found and self.mode == FAIL_FAST:
                 break

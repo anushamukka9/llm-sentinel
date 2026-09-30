@@ -53,9 +53,15 @@ class ObfuscationScanner(Scanner):
 
     Not in ``default_scanners()``: multilingual text trips it, so it is
     opt-in. See the module docstring for the trade-off.
+
+    This scanner opts out of the Vault's normalization pass
+    (``normalize_input = False``): it detects the very tricks
+    normalization removes, so it must see the raw text. Pair it with the
+    other scanners in one Vault and each gets the text it needs.
     """
 
     name = "obfuscation"
+    normalize_input = False
 
     def __init__(self, blob_min_length: int = 40, min_entropy: float = 4.5) -> None:
         self.blob_min_length = blob_min_length
