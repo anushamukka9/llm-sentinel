@@ -23,7 +23,8 @@ from urllib.parse import urlparse
 from ..core import Finding, Scanner
 from .base import find_all, make_finding
 
-_URL = re.compile(r"https?://[^\s<>\")\]]+")
+# Schemes are case-insensitive per RFC 3986: hTTpS://evil.example is a URL.
+_URL = re.compile(r"https?://[^\s<>\")\]]+", re.IGNORECASE)
 
 
 def _registered_domain(netloc: str) -> str:

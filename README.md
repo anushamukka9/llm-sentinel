@@ -200,6 +200,15 @@ If you evaluate against your own data, please contribute the cases back.
 Methodology, what the numbers do not measure, and how to add cases:
 [docs/benchmarks.md](docs/benchmarks.md).
 
+The table above measures the scanners; the adversarial eval measures the
+pipeline. `python -m llm_sentinel.adversarial_eval` runs every case
+through a real Vault (normalization on) clean and under evasion tricks
+(zero-width, fullwidth, homoglyphs, mixed case, all stacked). Headline
+result: normalization defeats zero-width, fullwidth, and homoglyph
+evasion at 1.00 almost everywhere; the few misses are documented honestly
+in [docs/benchmarks.md](docs/benchmarks.md), including the two real bugs
+this eval caught (uppercased homoglyphs, mixed-case URL schemes).
+
 ## Policy eval
 
 The per-scanner benchmarks above measure scanners in isolation. The
