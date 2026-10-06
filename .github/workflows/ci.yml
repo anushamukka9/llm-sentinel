@@ -22,6 +22,8 @@ jobs:
         run: pytest -q
       - name: Benchmark smoke test
         run: python -m llm_sentinel.benchmark
+      - name: Adversarial eval smoke test
+        run: python -m llm_sentinel.adversarial_eval
 
   lint:
     runs-on: ubuntu-latest

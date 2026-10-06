@@ -14,6 +14,10 @@ the normalized copy.
 Honest limits, stated plainly:
 - The confusables table is small and curated, not the full Unicode
   confusables list. It covers the lookalikes I see in the wild.
+- The table is case-complete: every entry has its uppercase/lowercase
+  counterpart, so a SHOUTY homoglyph attack folds just like a quiet one.
+  (An earlier version missed the uppercase forms, and the adversarial
+  eval caught it.)
 - Normalization is per character plus NFKC. It will not catch paraphrase,
   heavy leetspeak, non-English attacks, or meaning-level evasion.
 - Stripping zero-width characters changes nothing for legitimate text,
@@ -52,6 +56,7 @@ _STRIPPED = frozenset(
 _CONFUSABLES = {
     # Cyrillic lowercase
     "\u0430": "a",
+    "\u0432": "b",
     "\u0441": "c",
     "\u0435": "e",
     "\u0456": "i",
@@ -62,9 +67,13 @@ _CONFUSABLES = {
     "\u043e": "o",
     "\u0440": "p",
     "\u0455": "s",
+    "\u0442": "t",
     "\u0445": "x",
     "\u0443": "y",
     # Cyrillic uppercase
+    "\u0405": "S",
+    "\u0406": "I",
+    "\u0408": "J",
     "\u0410": "A",
     "\u0412": "B",
     "\u0421": "C",
@@ -75,6 +84,7 @@ _CONFUSABLES = {
     "\u041e": "O",
     "\u0420": "P",
     "\u0422": "T",
+    "\u0423": "Y",
     "\u0425": "X",
     # Greek lowercase
     "\u03b1": "a",
@@ -89,6 +99,21 @@ _CONFUSABLES = {
     "\u03c5": "u",
     "\u03c7": "x",
     "\u03b6": "z",
+    # Greek uppercase
+    "\u0391": "A",
+    "\u0392": "B",
+    "\u0395": "E",
+    "\u0397": "H",
+    "\u0399": "I",
+    "\u039a": "K",
+    "\u039c": "M",
+    "\u039d": "N",
+    "\u039f": "O",
+    "\u03a1": "P",
+    "\u03a4": "T",
+    "\u03a5": "Y",
+    "\u03a7": "X",
+    "\u0396": "Z",
 }
 
 

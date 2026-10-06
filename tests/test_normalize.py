@@ -34,6 +34,45 @@ class TestNormalizeText:
         # Greek omicron + rho -> Latin o + p
         assert normalize_text("st\u03bf\u03c1") == "stop"
 
+    def test_uppercase_homoglyphs_mapped(self):
+        # Uppercase lookalikes fold too: Cyrillic IE + Greek TAU + Greek
+        # UPSILON read as Latin I, T, Y.
+        assert normalize_text("\u0406d\u0399o\u03a4") == "IdIoT"
+        assert normalize_text("\u0423\u03a5") == "YY"
+
+    def test_uppercase_confusables_are_case_complete(self):
+        # Every lowercase confusable's uppercase form must map as well,
+        # otherwise a SHOUTY homoglyph attack walks past normalization.
+        # (Eta/nu are the honest exceptions: lowercase eta looks like "n"
+        # while uppercase ETA looks like "H".)
+        for ch, latin in {
+            "\u0430": "a",
+            "\u0432": "b",
+            "\u0441": "c",
+            "\u0435": "e",
+            "\u0456": "i",
+            "\u0458": "j",
+            "\u043a": "k",
+            "\u043c": "m",
+            "\u043e": "o",
+            "\u0440": "p",
+            "\u0455": "s",
+            "\u0442": "t",
+            "\u0445": "x",
+            "\u0443": "y",
+            "\u03b1": "a",
+            "\u03b5": "e",
+            "\u03b9": "i",
+            "\u03ba": "k",
+            "\u03bf": "o",
+            "\u03c1": "p",
+            "\u03c4": "t",
+            "\u03c7": "x",
+            "\u03b6": "z",
+        }.items():
+            upper = ch.upper()
+            assert normalize_text(upper) == latin.upper(), (ch, latin, upper)
+
     def test_ligature_expands(self):
         assert normalize_text("\ufb01le") == "file"
 

@@ -49,6 +49,15 @@ class TestURLAllowlist:
         s = URLAllowlistScanner(allowed_domains=["example.com"])
         assert s.scan("Go to http://192.168.1.1/admin.")
 
+    def test_mixed_case_scheme_flagged(self):
+        # Schemes are case-insensitive per RFC 3986; hTTpS://evil is a URL.
+        s = URLAllowlistScanner(allowed_domains=["example.com"])
+        assert s.scan("See hTtPs://evil.example.net/login for more.")
+
+    def test_mixed_case_scheme_allowed_domain_passes(self):
+        s = URLAllowlistScanner(allowed_domains=["example.com"])
+        assert s.scan("Docs at HTTPS://EXAMPLE.COM/docs.") == []
+
     def test_no_urls_clean(self):
         s = URLAllowlistScanner(allowed_domains=["example.com"])
         assert s.scan("No links here.") == []
