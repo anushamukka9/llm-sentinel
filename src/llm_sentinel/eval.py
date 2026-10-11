@@ -4,10 +4,10 @@
 
 ``eval/policy_eval.json`` holds cases: ``{"text", "expected", "category"}``,
 where expected=true means the policy should block. The script builds one
-fixed policy (the input-side defaults plus the two opt-in scanners), scores
+fixed policy (the input-side defaults plus the three opt-in scanners), scores
 verdicts per category and overall, and prints the table.
 
-This is a smoke test of composition, not a red-team exercise: 17
+This is a smoke test of composition, not a red-team exercise: 19
 hand-written cases can tell you the wiring is right, not that the policy
 is sufficient. The per-scanner benchmarks (``python -m
 llm_sentinel.benchmark``) measure the scanners individually.
@@ -21,14 +21,16 @@ from collections import defaultdict
 from pathlib import Path
 
 from . import Vault, default_scanners
-from .scanners import ObfuscationScanner, PromptLeakScanner
+from .scanners import ExfiltrationScanner, ObfuscationScanner, PromptLeakScanner
 
 EVAL_FILE = Path(__file__).resolve().parent.parent.parent / "eval" / "policy_eval.json"
 
 
 def build_eval_vault() -> Vault:
-    """The policy under test: defaults plus the two opt-in scanners."""
-    return Vault(default_scanners() + [ObfuscationScanner(), PromptLeakScanner()])
+    """The policy under test: defaults plus the three opt-in scanners."""
+    return Vault(
+        default_scanners() + [ObfuscationScanner(), PromptLeakScanner(), ExfiltrationScanner()]
+    )
 
 
 def run_eval() -> dict:

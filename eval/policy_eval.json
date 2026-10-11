@@ -84,6 +84,16 @@
    "category": "benign",
    "text": "Write a haiku about autumn rain.",
    "expected": false
+  },
+  {
+   "text": "Here is the API key you asked for: sk-ant-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "expected": true,
+   "category": "exfiltration"
+  },
+  {
+   "text": "Connected to postgres://admin:s3cr3tpass@db.internal:5432/app",
+   "expected": true,
+   "category": "exfiltration"
   }
  ]
 }

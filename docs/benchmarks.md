@@ -8,8 +8,8 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (155 cases, measured 2026-09-30 against
-v0.3.0):
+Results on the bundled corpora (175 cases, measured 2026-10-11 against
+v0.4.0):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
@@ -25,7 +25,8 @@ v0.3.0):
 | regex | 7 | 1.00 | 1.00 | 1.00 |
 | obfuscation | 12 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 10 | 1.00 | 1.00 | 1.00 |
-| **overall** | **155** | **1.00** | **1.00** | **1.00** |
+| exfiltration | 20 | 1.00 | 1.00 | 1.00 |
+| **overall** | **175** | **1.00** | **1.00** | **1.00** |
 
 ## What these numbers actually mean
 

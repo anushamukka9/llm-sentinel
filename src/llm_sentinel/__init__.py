@@ -21,6 +21,7 @@ from .normalize import normalize_text, normalize_with_map
 from .scanners import (
     BanTopicsScanner,
     CodeExecutionScanner,
+    ExfiltrationScanner,
     GibberishScanner,
     ObfuscationScanner,
     PIIScanner,
@@ -43,6 +44,7 @@ __all__ = [
     "FAIL_FAST",
     "BanTopicsScanner",
     "CodeExecutionScanner",
+    "ExfiltrationScanner",
     "Finding",
     "GibberishScanner",
     "GuardedError",

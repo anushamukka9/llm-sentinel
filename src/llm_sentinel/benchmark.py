@@ -25,6 +25,7 @@ from pathlib import Path
 from .scanners import (
     BanTopicsScanner,
     CodeExecutionScanner,
+    ExfiltrationScanner,
     GibberishScanner,
     ObfuscationScanner,
     PIIScanner,
@@ -57,6 +58,7 @@ FACTORIES = {
     ),
     "obfuscation": ObfuscationScanner,
     "prompt_leak": PromptLeakScanner,
+    "exfiltration": ExfiltrationScanner,
 }
 
 

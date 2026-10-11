@@ -2,6 +2,7 @@
 
 from .ban_topics import DEFAULT_TOPICS, BanTopicsScanner
 from .code_execution import CodeExecutionScanner
+from .exfiltration import ExfiltrationScanner
 from .gibberish import GibberishScanner
 from .obfuscation import ObfuscationScanner
 from .pii import PIIScanner, luhn_valid
@@ -17,6 +18,7 @@ __all__ = [
     "BanTopicsScanner",
     "DEFAULT_TOPICS",
     "CodeExecutionScanner",
+    "ExfiltrationScanner",
     "GibberishScanner",
     "ObfuscationScanner",
     "PIIScanner",
@@ -45,6 +47,10 @@ def default_scanners() -> list:
 
     PromptLeakScanner is excluded: it is an output-side scanner. Add it
     explicitly when you scan model output.
+
+    ExfiltrationScanner is excluded: it is the other output-side scanner,
+    catching credentials, keys, and PII leaking in responses. Add it
+    explicitly when you scan model output.
     """
     return [
         PromptInjectionScanner(),
@@ -72,4 +78,5 @@ SCANNER_REGISTRY: dict = {
     "regex": RegexScanner,
     "obfuscation": ObfuscationScanner,
     "prompt_leak": PromptLeakScanner,
+    "exfiltration": ExfiltrationScanner,
 }

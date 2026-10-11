@@ -1,8 +1,8 @@
 # Examples
 
-Four small, runnable programs showing llm-sentinel doing its job in
+Five small, runnable programs showing llm-sentinel doing its job in
 real setups. Each one is self-contained: copy it into your project and
-adapt it. All four run with no API keys and no network calls.
+adapt it. All five run with no API keys and no network calls.
 
 ## fastapi_app.py
 
@@ -93,3 +93,18 @@ python examples/guarded_function.py
 Expected output: the clean request passes, the leaky "system prompt"
 answer comes back with the disclosure redacted, and the strict echo
 raises `GuardedError` on the injection attempt.
+
+## output_exfiltration.py
+
+Output-side scanning before a model's answer reaches the user. The
+input defaults plus `prompt_leak` and `exfiltration`: a clean answer
+passes through, an instruction disclosure gets blocked, and a
+credential spill or leaked connection string gets blocked with a
+redacted version shown.
+
+```bash
+python examples/output_exfiltration.py
+```
+
+Expected output: clean passes; the instruction disclosure and the two
+leaks are blocked, each with its findings and the redacted text.

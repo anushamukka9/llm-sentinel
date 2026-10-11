@@ -103,11 +103,12 @@ cleaned text.
 | `regex` | Your own required/forbidden patterns |
 | `obfuscation` | Zero-width chars, bidi overrides, stray control chars, mixed-script confusables, encoded-looking blobs (opt-in, see below) |
 | `prompt_leak` | Model output that discloses system/developer instructions (opt-in, output-side) |
+| `exfiltration` | Credentials, keys, and PII spilling in model output: disclosure framing, PEM blocks, credentialed connection strings, query-param tokens, plus the secrets/PII detectors re-aimed at output (opt-in, output-side) |
 
 Every scanner documents its limitations in its docstring. Read them before
 you trust a scanner with anything important.
 
-Two scanners stay out of `default_scanners()` on purpose:
+Three scanners stay out of `default_scanners()` on purpose:
 
 - `obfuscation`: multilingual text trips its heuristics (accents are fine,
   but Cyrillic/Greek runs and stray control chars in non-English text are
@@ -118,6 +119,10 @@ Two scanners stay out of `default_scanners()` on purpose:
 - `prompt_leak`: it is an output-side scanner; the default set is the
   input-side set. Add it when you scan model output:
   `Vault(default_scanners() + [PromptLeakScanner()])`.
+- `exfiltration`: the other output-side scanner. It catches the thing
+  `prompt_leak` does not: actual secrets and PII in the response, not
+  just instruction disclosure. Add it when you scan model output:
+  `Vault(default_scanners() + [ExfiltrationScanner()])`.
 
 (For the same reason, `url_allowlist` is excluded: with no allowlist
 configured it would be a no-op pretending to protect you.)
@@ -175,7 +180,7 @@ Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (155 cases):
+Results on the bundled corpora (175 cases):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
@@ -191,7 +196,8 @@ Results on the bundled corpora (155 cases):
 | regex | 7 | 1.00 | 1.00 | 1.00 |
 | obfuscation | 12 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 10 | 1.00 | 1.00 | 1.00 |
-| **overall** | **155** | **1.00** | **1.00** | **1.00** |
+| exfiltration | 20 | 1.00 | 1.00 | 1.00 |
+| **overall** | **175** | **1.00** | **1.00** | **1.00** |
 
 Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are
@@ -213,9 +219,9 @@ this eval caught (uppercased homoglyphs, mixed-case URL schemes).
 
 The per-scanner benchmarks above measure scanners in isolation. The
 policy eval measures a composed Vault end to end: `eval/policy_eval.json`
-holds 17 labeled cases (injection, secrets, PII, prompt leaks,
-obfuscation, and benign traffic), and the runner builds one fixed policy
-(defaults plus the two opt-in scanners) and scores verdicts per category:
+holds 19 labeled cases (injection, secrets, PII, prompt leaks,
+exfiltration, obfuscation, and benign traffic), and the runner builds one fixed policy
+(defaults plus the three opt-in scanners) and scores verdicts per category:
 
 ```bash
 python -m llm_sentinel.eval
@@ -225,16 +231,17 @@ python -m llm_sentinel.eval
 category       correct  total    acc
 ------------------------------------
 benign               5      5   1.00
+exfiltration         2      2   1.00
 injection            4      4   1.00
 obfuscation          2      2   1.00
 pii                  2      2   1.00
 prompt_leak          2      2   1.00
 secrets              2      2   1.00
 ------------------------------------
-overall             17     17   1.00
+overall             19     19   1.00
 ```
 
-Same caveat as the benchmarks, doubled: 17 hand-written cases prove the
+Same caveat as the benchmarks, doubled: 19 hand-written cases prove the
 wiring is right, not that the policy is sufficient. Pass `--failures` to
 see the cases a run gets wrong.
 
@@ -268,6 +275,9 @@ Runnable programs in [`examples/`](examples/), each one self-contained:
 - `guarded_function.py`: the `@guarded` decorator on a plain function:
   clean input passes, a leaky answer comes back redacted, an injection
   attempt raises `GuardedError`
+- `output_exfiltration.py`: model outputs scanned with the two
+  output-side scanners (`prompt_leak`, `exfiltration`): clean answers
+  pass, disclosures and credential spills are blocked with redaction
 
 See `examples/README.md` for the exact commands.
 
@@ -294,6 +304,9 @@ See `examples/README.md` for the exact commands.
 - `prompt_leak` is phrase matching. Paraphrased disclosures slip through,
   and benign self-reference ("my instructions are to be helpful") flags
   too.
+- `exfiltration` sees literal text, not intent. PII findings carry no
+  context, so a model echoing back an address you gave it flags the same
+  as a real leak; redacted or paraphrased disclosures slip through.
 
 ## Roadmap
 
