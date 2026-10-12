@@ -1,8 +1,8 @@
 # Examples
 
-Five small, runnable programs showing llm-sentinel doing its job in
+Six small, runnable programs showing llm-sentinel doing its job in
 real setups. Each one is self-contained: copy it into your project and
-adapt it. All five run with no API keys and no network calls.
+adapt it. All six run with no API keys and no network calls.
 
 ## fastapi_app.py
 
@@ -108,3 +108,21 @@ python examples/output_exfiltration.py
 
 Expected output: clean passes; the instruction disclosure and the two
 leaks are blocked, each with its findings and the redacted text.
+
+## provider_wrappers.py
+
+Provider SDK wrappers with no framework in between: an OpenAI-shaped
+client wrapped in `guard_openai` and an Anthropic-shaped client wrapped
+in `guard_anthropic`. Both run on small fakes with the same shape as
+the real SDKs, so the guarded calls read exactly like production code.
+Message text is scanned before the call; response text is scanned
+after it.
+
+```bash
+python examples/provider_wrappers.py
+```
+
+Expected output: the clean OpenAI-style call passes, the injection is
+blocked before the call, the leaky Anthropic-style reply is blocked on
+the way out, and the same reply comes back redacted with
+`redact=True`.
