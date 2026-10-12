@@ -108,3 +108,16 @@ def test_redact_pipeline_cli_via_subprocess():
     assert proc.returncode == 0
     assert "jane@example.com" not in proc.stdout
     assert "REDACTED" in proc.stdout
+
+
+import provider_wrappers  # noqa: E402
+
+
+def test_provider_wrappers_example_demo_runs(capsys):
+    # demo() prints; the clean and redacted paths must not raise.
+    provider_wrappers.demo()
+    out = capsys.readouterr().out
+    assert "capital of France is Paris" in out
+    assert "blocked before the call" in out
+    assert "REDACTED" in out
+    assert "AKIAIOSFODNN7EXAMPLE" not in out.split("redact=True:")[-1]

@@ -259,7 +259,34 @@ app.add_middleware(SentinelMiddleware, vault=vault, block_status_code=400)
 # pip install llm-sentinel[langchain]
 from llm_sentinel.adapters.langchain import SentinelCallbackHandler, guard_runnable
 safe_chain = guard_runnable(chain, vault)
+
+# OpenAI: one wrapper around the client, no framework needed
+# pip install llm-sentinel[openai]
+from openai import OpenAI
+from llm_sentinel.adapters.openai import guard_openai
+client = guard_openai(OpenAI(), vault)
+reply = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
+
+# Anthropic: same idea, same Vault
+# pip install llm-sentinel[anthropic]
+import anthropic
+from llm_sentinel.adapters.anthropic import guard_anthropic
+client = guard_anthropic(anthropic.Anthropic(), vault)
+reply = client.messages.create(model="claude-sonnet-4-5", max_tokens=1024, messages=messages)
 ```
+
+The provider wrappers scan message text before the call (a blocked
+prompt never reaches the provider) and response text after it. Blocked
+output raises `ProviderBlockedError`, unless you pass `redact=True`,
+which rewrites the leaking text fields in place with their redacted
+versions. Sync and async clients both work (`GuardedAsyncOpenAI`,
+`GuardedAsyncAnthropic`). The wrappers are duck-typed: they never import
+the SDKs, they wrap any client with the usual shape, so the extras
+above are only needed for the SDKs themselves. Chat completions, legacy
+completions, and the OpenAI Responses API are covered; Anthropic
+messages and legacy completions are covered. Streaming calls scan the
+input only: the wrapper returns before the streamed chunks exist, so
+buffer and scan streamed output yourself if you need it covered.
 
 ## Examples
 
@@ -278,6 +305,11 @@ Runnable programs in [`examples/`](examples/), each one self-contained:
 - `output_exfiltration.py`: model outputs scanned with the two
   output-side scanners (`prompt_leak`, `exfiltration`): clean answers
   pass, disclosures and credential spills are blocked with redaction
+- `provider_wrappers.py`: OpenAI-shaped and Anthropic-shaped clients
+  wrapped in `guard_openai` / `guard_anthropic`, running offline on
+  fakes: a clean call passes, an injection is blocked before the call,
+  a leaky reply is blocked on the way out or redacted with
+  `redact=True`
 
 See `examples/README.md` for the exact commands.
 
@@ -307,6 +339,12 @@ See `examples/README.md` for the exact commands.
 - `exfiltration` sees literal text, not intent. PII findings carry no
   context, so a model echoing back an address you gave it flags the same
   as a real leak; redacted or paraphrased disclosures slip through.
+- The provider wrappers scan text fields only. Tool calls, image
+  blocks, and other structured payload in a provider response are not
+  inspected, and streaming responses pass through with only their
+  input scanned. Redaction edits response objects in place; a response
+  object that refuses edits makes redaction raise instead of passing
+  the leaking text through quietly.
 
 ## Roadmap
 
