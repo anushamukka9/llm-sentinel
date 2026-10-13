@@ -101,7 +101,7 @@ cleaned text.
 | `url_allowlist` | URLs pointing outside your configured domain allowlist |
 | `token_limit` | Text estimated over your token budget (chars/4 heuristic) |
 | `regex` | Your own required/forbidden patterns |
-| `obfuscation` | Zero-width chars, bidi overrides, stray control chars, mixed-script confusables, encoded-looking blobs (opt-in, see below) |
+| `obfuscation` | Zero-width chars, bidi overrides, stray control chars, fullwidth runs, mixed-script confusables, encoded-looking blobs (opt-in, see below) |
 | `prompt_leak` | Model output that discloses system/developer instructions (opt-in, output-side) |
 | `exfiltration` | Credentials, keys, and PII spilling in model output: disclosure framing, PEM blocks, credentialed connection strings, query-param tokens, plus the secrets/PII detectors re-aimed at output (opt-in, output-side) |
 
@@ -331,8 +331,9 @@ See `examples/README.md` for the exact commands.
   alone for data you cannot afford to leak; pair it with blocking.
 - `obfuscation` catches the shape of obfuscation, not intent: a
   zero-width joiner in an emoji sequence is typography, not an attack,
-  and hex-heavy tokens may not clear the blob entropy bar. It is opt-in
-  because multilingual text trips it.
+  legitimate fullwidth text (common with Japanese and Chinese input
+  methods) flags as a fullwidth run, and hex-heavy tokens may not clear
+  the blob entropy bar. It is opt-in because multilingual text trips it.
 - `prompt_leak` is phrase matching. Paraphrased disclosures slip through,
   and benign self-reference ("my instructions are to be helpful") flags
   too.

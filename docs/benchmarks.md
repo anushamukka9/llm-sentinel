@@ -8,8 +8,8 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (175 cases, measured 2026-10-11 against
-v0.4.0):
+Results on the bundled corpora (175 cases, measured 2026-10-13 against
+v0.6.0):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
@@ -59,7 +59,7 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (155 cases, measured 2026-10-06 against v0.4.0):
+Results (175 cases, measured 2026-10-13 against v0.6.0):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
@@ -73,12 +73,13 @@ Results (155 cases, measured 2026-10-06 against v0.4.0):
 | url_allowlist | 10 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | token_limit | 6 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | regex | 7 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
-| obfuscation | 12 | 1.00 | 1.00 | 0.57 | 0.71 | 1.00 | 1.00 | 0.56 |
+| obfuscation | 12 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
 | prompt_leak | 10 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| **overall** | **155** | **1.00** | **1.00** | **0.97** | **0.98** | **0.87** | **0.87** | **0.95** |
+| exfiltration | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 0.71 | 0.71 | 1.00 |
+| **overall** | **175** | **1.00** | **1.00** | **1.00** | **1.00** | **0.85** | **0.85** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
-evasion almost everywhere. The cells that are not 1.00 are worth reading
+evasion in every row. The cells that are not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
@@ -94,14 +95,22 @@ pipeline failing:
   case-sensitive, so mixed-case benign text fails the required pattern.
   That is user configuration, not a library bug; add `(?i)` to your own
   patterns if you want case-insensitive matching.
-- `obfuscation` fullwidth 0.57 / homoglyph 0.71: this scanner reads the
-  raw text (it must, it detects the tricks normalization removes), and
-  fullwidth runs plus fully-homoglyphed text evade its current
-  heuristics. Every other scanner still folds these to 1.00 through
-  normalization. Fullwidth-run detection is queued.
-- `obfuscation` neg_ok 0.56: by construction. The transforms inject
-  zero-width, fullwidth, and homoglyph characters into benign text,
-  which is exactly what this scanner detects.
+- `obfuscation` fullwidth and homoglyph are 1.00 since v0.6.0 (they
+  were 0.57 and 0.71 in v0.4.0). The scanner now flags fullwidth runs
+  directly, catches mixed-script words even when so little Latin
+  survives that the document-level tripwire misses, and re-checks
+  literal escapes and encoded blobs on a folded copy of the text with
+  spans mapped back to the original.
+- `obfuscation` neg_ok 0.24: by construction, and lower than it used
+  to be. The transforms inject zero-width, fullwidth, and homoglyph
+  characters into benign text, which is exactly what this scanner
+  detects, and v0.6.0 detects more of it. A benign sentence rewritten
+  in fullwidth is indistinguishable from an evasive one, which is why
+  this scanner stays opt-in.
+- `exfiltration` mixed_case 0.71: same defanging logic as `secrets`.
+  The scanner reuses the secrets and PII detectors, whose formats are
+  case-sensitive for a reason: a mixed-case PEM header is not a working
+  key block, and `AkIa...` is not a working AWS key.
 
 Two real bugs came out of building this eval, both fixed in v0.4.0:
 
