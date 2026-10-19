@@ -63,6 +63,70 @@
   {
    "text": "Self-harm prevention resources and hotline numbers.",
    "expected": false
+  },
+  {
+   "text": "A forum post explained how to build a bomb from fertilizer.",
+   "expected": true
+  },
+  {
+   "text": "He searched for pipe bomb designs late at night.",
+   "expected": true
+  },
+  {
+   "text": "The novel describes a molotov thrown during the riot.",
+   "expected": true
+  },
+  {
+   "text": "Customs seized a package labeled as ricin powder.",
+   "expected": true
+  },
+  {
+   "text": "She threatened to end my life in the message.",
+   "expected": true
+  },
+  {
+   "text": "The tutorial promised shoplifting tips for beginners.",
+   "expected": true
+  },
+  {
+   "text": "Police found instructions to cook meth in the garage.",
+   "expected": true
+  },
+  {
+   "text": "The scam ring relied on credit card fraud for income.",
+   "expected": true
+  },
+  {
+   "text": "The chemistry class built a calorimeter to measure heat.",
+   "expected": false
+  },
+  {
+   "text": "Gun safety courses cover storage and transport rules.",
+   "expected": false
+  },
+  {
+   "text": "The memoir discusses recovery after a suicide attempt honestly.",
+   "expected": false
+  },
+  {
+   "text": "Locksmiths learn to open locks without damaging doors.",
+   "expected": false
+  },
+  {
+   "text": "The heist film shows thieves planning a museum robbery.",
+   "expected": false
+  },
+  {
+   "text": "Prevention programs teach teens about drug risks early.",
+   "expected": false
+  },
+  {
+   "text": "Fraud alerts from the bank arrive by text message.",
+   "expected": false
+  },
+  {
+   "text": "The orchard tour ends with fresh cider and pie.",
+   "expected": false
   }
  ]
 }

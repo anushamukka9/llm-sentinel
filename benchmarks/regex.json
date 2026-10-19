@@ -1,1 +1,84 @@
-{"cases":[{"expected":true,"text":"hello world, this document is classified internal"},{"expected":true,"text":"goodbye world, nothing to add"},{"expected":true,"text":"classified plans with no greeting at all"},{"expected":false,"text":"hello"},{"expected":false,"text":"hello world this is fine"},{"expected":false,"text":"say hello to the new intern"},{"expected":false,"text":"hello again, all clear here"}]}
+{
+ "cases": [
+  {
+   "expected": true,
+   "text": "hello world, this document is classified internal"
+  },
+  {
+   "expected": true,
+   "text": "goodbye world, nothing to add"
+  },
+  {
+   "expected": true,
+   "text": "classified plans with no greeting at all"
+  },
+  {
+   "expected": false,
+   "text": "hello"
+  },
+  {
+   "expected": false,
+   "text": "hello world this is fine"
+  },
+  {
+   "expected": false,
+   "text": "say hello to the new intern"
+  },
+  {
+   "expected": false,
+   "text": "hello again, all clear here"
+  },
+  {
+   "text": "hello team, the appendix is classified and stays internal",
+   "expected": true
+  },
+  {
+   "text": "classified memo, no greeting attached at all",
+   "expected": true
+  },
+  {
+   "text": "Hello everyone, agenda follows below",
+   "expected": true
+  },
+  {
+   "text": "good morning, the draft is ready for review",
+   "expected": true
+  },
+  {
+   "text": "say hello to the classified archive tour",
+   "expected": true
+  },
+  {
+   "text": "the report marked classified arrives Friday",
+   "expected": true
+  },
+  {
+   "text": "HELLO in caps, shouted across the office",
+   "expected": true
+  },
+  {
+   "text": "hello, the agenda is attached for Monday",
+   "expected": false
+  },
+  {
+   "text": "please say hello to our new analyst today",
+   "expected": false
+  },
+  {
+   "text": "hello world examples open the tutorial",
+   "expected": false
+  },
+  {
+   "text": "a quick hello before we start the workshop",
+   "expected": false
+  },
+  {
+   "text": "hello again, minutes from last week attached",
+   "expected": false
+  },
+  {
+   "text": "they waved hello at the front desk crew",
+   "expected": false
+  }
+ ]
+}

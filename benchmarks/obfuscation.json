@@ -47,6 +47,62 @@
   {
    "text": "The total is 42 dollars for the invoice dated Monday.",
    "expected": false
+  },
+  {
+   "text": "inv\u200boice total due",
+   "expected": true
+  },
+  {
+   "text": "open report\u202e txt file",
+   "expected": true
+  },
+  {
+   "text": "line one\u000bline two here",
+   "expected": true
+  },
+  {
+   "text": "run \\u0043\\u0041 now please",
+   "expected": true
+  },
+  {
+   "text": "payload \\x41\\x42\\x43 attached",
+   "expected": true
+  },
+  {
+   "text": "\uff48\uff45\uff4c\uff4c\uff4f \uff57\uff4f\uff52\uff4c\uff44 promo",
+   "expected": true
+  },
+  {
+   "text": "send it to the \u0430dm\u0456n desk today please now",
+   "expected": true
+  },
+  {
+   "text": "payload: aB3xK9mQ2vL7pR4tY8wZ1cN6bV5dF0gHjK2mN4pQ6rS8tU0vW3xY5zA7bC9dE2fG4h=",
+   "expected": true
+  },
+  {
+   "text": "The workshop starts at ten in the main hall.",
+   "expected": false
+  },
+  {
+   "text": "Please water the plants while I am away next week.",
+   "expected": false
+  },
+  {
+   "text": "Caf\u00e9 au lait and a warm croissant for breakfast.",
+   "expected": false
+  },
+  {
+   "text": "The recipe calls for cr\u00e8me fra\u00eeche and nutmeg.",
+   "expected": false
+  },
+  {
+   "text": "Tickets cost forty dollars at the door tonight.",
+   "expected": false
+  },
+  {
+   "text": "Our flight lands at noon, taxi to the hotel after.",
+   "expected": false
   }
  ]
 }

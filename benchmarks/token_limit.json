@@ -23,6 +23,46 @@
   {
    "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
    "expected": true
+  },
+  {
+   "text": "The quarterly planning document walks through hiring, budgets, travel, and tooling for every team, then closes with risks, owners, and dates for the next review cycle in November and the follow up session that is already booked for early December this year with the leads.",
+   "expected": true
+  },
+  {
+   "text": "When the workshop ended, the facilitator collected every sticky note from the wall, grouped them by theme, photographed each cluster for the shared drive, and promised a written summary with owners and due dates before the end of the week for everyone who attended.",
+   "expected": true
+  },
+  {
+   "text": "The migration guide explains how to export the old project, verify the export against the checklist, import it into the new workspace, recreate the shared views, and invite the team again, with notes on what to do when a step fails halfway through the process.",
+   "expected": true
+  },
+  {
+   "text": "Our neighborhood association meets on the first Tuesday of every month to discuss parking, park cleanup, the summer picnic, and the holiday lights, and the minutes from each meeting are posted on the community board near the library entrance for anyone to read.",
+   "expected": true
+  },
+  {
+   "text": "The onboarding packet covers your first week schedule, the buddy system, how to request equipment, where the style guides live, who to ask about benefits, and how reviews work here, plus a short list of people to meet before your first project assignment begins.",
+   "expected": true
+  },
+  {
+   "text": "Short note: the meeting moved to Friday.",
+   "expected": false
+  },
+  {
+   "text": "A medium length reminder about the team lunch tomorrow at noon.",
+   "expected": false
+  },
+  {
+   "text": "This sentence stays well under the limit while still saying something complete about the release notes draft.",
+   "expected": false
+  },
+  {
+   "text": "Please review the attached summary and reply with any edits by Thursday.",
+   "expected": false
+  },
+  {
+   "text": "The garden club newsletter lists planting dates, seed swaps, and the spring cleanup signup sheet for members.",
+   "expected": false
   }
  ]
 }

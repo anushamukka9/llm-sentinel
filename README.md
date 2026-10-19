@@ -180,24 +180,24 @@ Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (175 cases):
+Results on the bundled corpora (375 cases):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
-| prompt_injection | 20 | 1.00 | 1.00 | 1.00 |
-| secrets | 17 | 1.00 | 1.00 | 1.00 |
-| pii | 17 | 1.00 | 1.00 | 1.00 |
-| toxicity | 14 | 1.00 | 1.00 | 1.00 |
-| gibberish | 10 | 1.00 | 1.00 | 1.00 |
-| ban_topics | 16 | 1.00 | 1.00 | 1.00 |
-| code_execution | 16 | 1.00 | 1.00 | 1.00 |
-| url_allowlist | 10 | 1.00 | 1.00 | 1.00 |
-| token_limit | 6 | 1.00 | 1.00 | 1.00 |
-| regex | 7 | 1.00 | 1.00 | 1.00 |
-| obfuscation | 12 | 1.00 | 1.00 | 1.00 |
-| prompt_leak | 10 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 20 | 1.00 | 1.00 | 1.00 |
-| **overall** | **175** | **1.00** | **1.00** | **1.00** |
+| prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
+| secrets | 35 | 1.00 | 1.00 | 1.00 |
+| pii | 35 | 1.00 | 1.00 | 1.00 |
+| toxicity | 28 | 1.00 | 1.00 | 1.00 |
+| gibberish | 22 | 1.00 | 1.00 | 1.00 |
+| ban_topics | 32 | 1.00 | 1.00 | 1.00 |
+| code_execution | 32 | 1.00 | 1.00 | 1.00 |
+| url_allowlist | 24 | 1.00 | 1.00 | 1.00 |
+| token_limit | 16 | 1.00 | 1.00 | 1.00 |
+| regex | 20 | 1.00 | 1.00 | 1.00 |
+| obfuscation | 26 | 1.00 | 1.00 | 1.00 |
+| prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
+| exfiltration | 40 | 1.00 | 1.00 | 1.00 |
+| **overall** | **375** | **1.00** | **1.00** | **1.00** |
 
 Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are

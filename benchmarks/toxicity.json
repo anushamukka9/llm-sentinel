@@ -55,6 +55,62 @@
   {
    "text": "What the hell is going on with the build?",
    "expected": false
+  },
+  {
+   "text": "This crap update wiped my saved settings again.",
+   "expected": true
+  },
+  {
+   "text": "Stop acting like a jackass in the review thread.",
+   "expected": true
+  },
+  {
+   "text": "He called the plan total horseshit and walked out.",
+   "expected": true
+  },
+  {
+   "text": "What a bitch of a problem, it took all weekend.",
+   "expected": true
+  },
+  {
+   "text": "The bastard file refuses to open on Mondays.",
+   "expected": true
+  },
+  {
+   "text": "Quit pissing around and ship the fix today.",
+   "expected": true
+  },
+  {
+   "text": "That goddamn printer jammed for the third time.",
+   "expected": true
+  },
+  {
+   "text": "Do not be a douchebag to the new hires.",
+   "expected": true
+  },
+  {
+   "text": "That is a darn tricky bug, it took all weekend.",
+   "expected": false
+  },
+  {
+   "text": "Heck of a storm last night, the fence blew down.",
+   "expected": false
+  },
+  {
+   "text": "The dam tour explains how the spillway works.",
+   "expected": false
+  },
+  {
+   "text": "She gave a brilliant talk on caching strategies.",
+   "expected": false
+  },
+  {
+   "text": "What the heck is the build doing this time?",
+   "expected": false
+  },
+  {
+   "text": "Please keep the thread kind and on topic, thanks.",
+   "expected": false
   }
  ]
 }

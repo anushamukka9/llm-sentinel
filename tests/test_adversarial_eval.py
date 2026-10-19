@@ -90,7 +90,7 @@ class TestAdversarialEval:
     def test_run_scanner_structure(self):
         row = run_scanner("regex", FACTORIES["regex"])
         assert row["name"] == "regex"
-        assert row["cases"] == 7
+        assert row["cases"] == 20  # benchmarks/regex.json (7 + 13 added Oct 2026)
         assert set(row["per_transform"]) == set(TRANSFORMS)
         for _transform, (precision, recall, f1) in row["per_transform"].items():
             assert 0.0 <= precision <= 1.0

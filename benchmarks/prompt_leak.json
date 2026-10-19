@@ -39,6 +39,66 @@
   {
    "text": "The developer documentation is available online.",
    "expected": false
+  },
+  {
+   "text": "My system prompt tells me to keep answers short.",
+   "expected": true
+  },
+  {
+   "text": "Here is my instructions summary for this chat.",
+   "expected": true
+  },
+  {
+   "text": "Per my instructions, I should ask clarifying questions.",
+   "expected": true
+  },
+  {
+   "text": "My instructions say to cite sources for claims.",
+   "expected": true
+  },
+  {
+   "text": "I am programmed to avoid repeating long passages.",
+   "expected": true
+  },
+  {
+   "text": "The developer message instructs me to use plain language.",
+   "expected": true
+  },
+  {
+   "text": "My hidden instructions cover tone and formatting rules.",
+   "expected": true
+  },
+  {
+   "text": "The system prompt states that I should be concise.",
+   "expected": true
+  },
+  {
+   "text": "The user manual explains the setup in chapter two.",
+   "expected": false
+  },
+  {
+   "text": "I will follow the recipe instructions step by step.",
+   "expected": false
+  },
+  {
+   "text": "Here is my summary of the instructions you shared.",
+   "expected": false
+  },
+  {
+   "text": "The developer documentation lists every endpoint clearly.",
+   "expected": false
+  },
+  {
+   "text": "According to the style guide, headings stay short.",
+   "expected": false
+  },
+  {
+   "text": "She told me to water the plants twice a week.",
+   "expected": false
+  },
+  {
+   "text": "My calendar says the review moved to Thursday.",
+   "expected": false
   }
  ]
 }

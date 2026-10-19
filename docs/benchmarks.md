@@ -8,25 +8,35 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (175 cases, measured 2026-10-13 against
-v0.6.0):
+Results on the bundled corpora (375 cases, measured 2026-10-18 against
+v0.6.1):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
-| prompt_injection | 20 | 1.00 | 1.00 | 1.00 |
-| secrets | 17 | 1.00 | 1.00 | 1.00 |
-| pii | 17 | 1.00 | 1.00 | 1.00 |
-| toxicity | 14 | 1.00 | 1.00 | 1.00 |
-| gibberish | 10 | 1.00 | 1.00 | 1.00 |
-| ban_topics | 16 | 1.00 | 1.00 | 1.00 |
-| code_execution | 16 | 1.00 | 1.00 | 1.00 |
-| url_allowlist | 10 | 1.00 | 1.00 | 1.00 |
-| token_limit | 6 | 1.00 | 1.00 | 1.00 |
-| regex | 7 | 1.00 | 1.00 | 1.00 |
-| obfuscation | 12 | 1.00 | 1.00 | 1.00 |
-| prompt_leak | 10 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 20 | 1.00 | 1.00 | 1.00 |
-| **overall** | **175** | **1.00** | **1.00** | **1.00** |
+| prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
+| secrets | 35 | 1.00 | 1.00 | 1.00 |
+| pii | 35 | 1.00 | 1.00 | 1.00 |
+| toxicity | 28 | 1.00 | 1.00 | 1.00 |
+| gibberish | 22 | 1.00 | 1.00 | 1.00 |
+| ban_topics | 32 | 1.00 | 1.00 | 1.00 |
+| code_execution | 32 | 1.00 | 1.00 | 1.00 |
+| url_allowlist | 24 | 1.00 | 1.00 | 1.00 |
+| token_limit | 16 | 1.00 | 1.00 | 1.00 |
+| regex | 20 | 1.00 | 1.00 | 1.00 |
+| obfuscation | 26 | 1.00 | 1.00 | 1.00 |
+| prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
+| exfiltration | 40 | 1.00 | 1.00 | 1.00 |
+| **overall** | **375** | **1.00** | **1.00** | **1.00** |
+
+The October 2026 expansion added 200 cases (175 to 375), weighted toward
+the newer scanners: exfiltration and prompt_injection doubled, and every
+scanner gained near-miss negatives alongside fresh positives (lookalike
+domains for url_allowlist, case-sensitivity traps for regex, test-card
+numbers for pii, documentation-style example keys for secrets). Same
+honest caveat, doubled: a bigger hand-written corpus is still a
+hand-written corpus, written by the same person who wrote the patterns.
+It proves broader coverage of the obvious cases, not robustness in the
+wild.
 
 ## What these numbers actually mean
 
@@ -59,33 +69,34 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (175 cases, measured 2026-10-13 against v0.6.0):
+Results (375 cases, measured 2026-10-18 against v0.6.1):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
-| prompt_injection | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| secrets | 17 | 1.00 | 1.00 | 1.00 | 1.00 | 0.78 | 0.78 | 1.00 |
-| pii | 17 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| toxicity | 14 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| gibberish | 10 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| ban_topics | 16 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| code_execution | 16 | 1.00 | 1.00 | 1.00 | 1.00 | 0.00 | 0.00 | 1.00 |
-| url_allowlist | 10 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| token_limit | 6 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| regex | 7 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
-| obfuscation | 12 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
-| prompt_leak | 10 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 0.71 | 0.71 | 1.00 |
-| **overall** | **175** | **1.00** | **1.00** | **1.00** | **1.00** | **0.85** | **0.85** | **0.93** |
+| prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| secrets | 35 | 1.00 | 1.00 | 1.00 | 1.00 | 0.84 | 0.84 | 1.00 |
+| pii | 35 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| ban_topics | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| code_execution | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 0.00 | 0.00 | 1.00 |
+| url_allowlist | 24 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| token_limit | 16 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| regex | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
+| obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
+| prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| exfiltration | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
+| **overall** | **375** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
 evasion in every row. The cells that are not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
-- `secrets` mixed_case 0.78: the transform defangs the secret. A
+- `secrets` mixed_case 0.84: the transform defangs the secret. A
   mixed-case `AkIa...` is not a well-formed AWS key, so the scanner is
-  right to stay quiet.
+  right to stay quiet. The cases that survive are the ones whose format
+  is case-insensitive by design (generic assignments, hex tokens).
 - `code_execution` mixed_case/combined 0.00: `Os.SyStEm(` does not
   execute in Python, and this scanner's threat model is executable code
   (a compromised tool handing the agent a snippet that escapes the
@@ -107,7 +118,7 @@ pipeline failing:
   detects, and v0.6.0 detects more of it. A benign sentence rewritten
   in fullwidth is indistinguishable from an evasive one, which is why
   this scanner stays opt-in.
-- `exfiltration` mixed_case 0.71: same defanging logic as `secrets`.
+- `exfiltration` mixed_case 0.76: same defanging logic as `secrets`.
   The scanner reuses the secrets and PII detectors, whose formats are
   case-sensitive for a reason: a mixed-case PEM header is not a working
   key block, and `AkIa...` is not a working AWS key.
@@ -130,6 +141,11 @@ Two real bugs came out of building this eval, both fixed in v0.4.0:
   team, not string munging.
 - Your data. The single most useful thing you can do with this library
   is run it against your own traffic and tell me where it is wrong.
+- Independence. The October 2026 expansion grew the corpus from 175 to
+  375 cases, but I wrote every new case myself, against patterns I also
+  wrote. A 1.00 table under that setup shows the patterns do what I
+  meant them to do. It says nothing about attacks I did not think of,
+  which is exactly the set that matters in production.
 
 ## Contributing cases
 

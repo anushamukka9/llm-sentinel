@@ -1,1 +1,100 @@
-{"cases":[{"expected":true,"text":"Download the report from https://evil-phishing.example.net/login now."},{"expected":true,"text":"See https://malware-downloads.ru/payload.exe for details."},{"expected":true,"text":"Visit http://192.168.1.1/admin to configure."},{"expected":true,"text":"Our docs moved to https://docs.evil.com/mirror."},{"expected":false,"text":"Read the guide at https://example.com/docs/getting-started."},{"expected":false,"text":"The API reference is https://api.example.com/v2/users."},{"expected":false,"text":"Community help at https://trusted.org/forum is friendly."},{"expected":false,"text":"Subdomain link: https://blog.example.com/post/1 works fine."},{"expected":false,"text":"No URLs in this text at all, just plain words."},{"expected":false,"text":"Email me, do not click anything."}]}
+{
+ "cases": [
+  {
+   "expected": true,
+   "text": "Download the report from https://evil-phishing.example.net/login now."
+  },
+  {
+   "expected": true,
+   "text": "See https://malware-downloads.ru/payload.exe for details."
+  },
+  {
+   "expected": true,
+   "text": "Visit http://192.168.1.1/admin to configure."
+  },
+  {
+   "expected": true,
+   "text": "Our docs moved to https://docs.evil.com/mirror."
+  },
+  {
+   "expected": false,
+   "text": "Read the guide at https://example.com/docs/getting-started."
+  },
+  {
+   "expected": false,
+   "text": "The API reference is https://api.example.com/v2/users."
+  },
+  {
+   "expected": false,
+   "text": "Community help at https://trusted.org/forum is friendly."
+  },
+  {
+   "expected": false,
+   "text": "Subdomain link: https://blog.example.com/post/1 works fine."
+  },
+  {
+   "expected": false,
+   "text": "No URLs in this text at all, just plain words."
+  },
+  {
+   "expected": false,
+   "text": "Email me, do not click anything."
+  },
+  {
+   "text": "Mirror is live at https://example-com.evil.net/portal today.",
+   "expected": true
+  },
+  {
+   "text": "Grab the file from http://downloads.free-tools.xyz/pack.zip now.",
+   "expected": true
+  },
+  {
+   "text": "The survey link https://forms.gle.example.net/q goes nowhere good.",
+   "expected": true
+  },
+  {
+   "text": "Admin panel sits at https://192.168.0.254/status for anyone.",
+   "expected": true
+  },
+  {
+   "text": "Docs were copied to https://trusted.org.evil.io/guide last week.",
+   "expected": true
+  },
+  {
+   "text": "Login clone found at https://examp1e.com/signin yesterday.",
+   "expected": true
+  },
+  {
+   "text": "See https://sub.evil-example.com/report for the fake chart.",
+   "expected": true
+  },
+  {
+   "text": "Start at https://example.com/signup for the trial.",
+   "expected": false
+  },
+  {
+   "text": "API status lives at https://status.example.com/health now.",
+   "expected": false
+  },
+  {
+   "text": "The paper is mirrored at https://trusted.org/papers/2026 too.",
+   "expected": false
+  },
+  {
+   "text": "Deep link: https://docs.trusted.org/guide/start works.",
+   "expected": false
+  },
+  {
+   "text": "Both https://example.com/a and https://trusted.org/b are fine.",
+   "expected": false
+  },
+  {
+   "text": "No links here, the address is in the printed booklet.",
+   "expected": false
+  },
+  {
+   "text": "Write to the list, links are shared in the meeting notes.",
+   "expected": false
+  }
+ ]
+}

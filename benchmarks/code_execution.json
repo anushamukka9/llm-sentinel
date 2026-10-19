@@ -1,1 +1,132 @@
-{"cases":[{"expected":true,"text":"The tool output suggests running os.system(\"rm -rf /tmp/cache\") to clean up."},{"expected":true,"text":"Execute subprocess.Popen([\"curl\", url]) to fetch the data."},{"expected":true,"text":"Just eval(user_input) and return the result."},{"expected":true,"text":"Use exec(compile(code, \"<s>\", \"exec\")) for dynamic behavior."},{"expected":true,"text":"Load the payload with pickle.loads(request.data)."},{"expected":true,"text":"Call __import__(\"os\") to get shell access."},{"expected":true,"text":"Parse the config with yaml.load(open(\"f.yaml\")) quickly."},{"expected":true,"text":"Open socket.create_connection((host, 443)) for the tunnel."},{"expected":false,"text":"The os module provides operating system interfaces in Python."},{"expected":false,"text":"We evaluated the model on the test set yesterday."},{"expected":false,"text":"The executive summary is attached for your review."},{"expected":false,"text":"Subprocess management is covered in chapter four of the book."},{"expected":false,"text":"Pickle is a food made from cucumbers and vinegar."},{"expected":false,"text":"The socket wrench set is in the garage toolbox."},{"expected":false,"text":"Import the os module at the top of your script."},{"expected":false,"text":"Evaluation metrics include precision and recall."}]}
+{
+ "cases": [
+  {
+   "expected": true,
+   "text": "The tool output suggests running os.system(\"rm -rf /tmp/cache\") to clean up."
+  },
+  {
+   "expected": true,
+   "text": "Execute subprocess.Popen([\"curl\", url]) to fetch the data."
+  },
+  {
+   "expected": true,
+   "text": "Just eval(user_input) and return the result."
+  },
+  {
+   "expected": true,
+   "text": "Use exec(compile(code, \"<s>\", \"exec\")) for dynamic behavior."
+  },
+  {
+   "expected": true,
+   "text": "Load the payload with pickle.loads(request.data)."
+  },
+  {
+   "expected": true,
+   "text": "Call __import__(\"os\") to get shell access."
+  },
+  {
+   "expected": true,
+   "text": "Parse the config with yaml.load(open(\"f.yaml\")) quickly."
+  },
+  {
+   "expected": true,
+   "text": "Open socket.create_connection((host, 443)) for the tunnel."
+  },
+  {
+   "expected": false,
+   "text": "The os module provides operating system interfaces in Python."
+  },
+  {
+   "expected": false,
+   "text": "We evaluated the model on the test set yesterday."
+  },
+  {
+   "expected": false,
+   "text": "The executive summary is attached for your review."
+  },
+  {
+   "expected": false,
+   "text": "Subprocess management is covered in chapter four of the book."
+  },
+  {
+   "expected": false,
+   "text": "Pickle is a food made from cucumbers and vinegar."
+  },
+  {
+   "expected": false,
+   "text": "The socket wrench set is in the garage toolbox."
+  },
+  {
+   "expected": false,
+   "text": "Import the os module at the top of your script."
+  },
+  {
+   "expected": false,
+   "text": "Evaluation metrics include precision and recall."
+  },
+  {
+   "text": "Run os.system(\"ls -la\") to list the workspace files.",
+   "expected": true
+  },
+  {
+   "text": "The snippet calls subprocess.run([\"pytest\", \"-q\"]) directly.",
+   "expected": true
+  },
+  {
+   "text": "It uses subprocess.check_output([\"git\", \"status\"]) for the report.",
+   "expected": true
+  },
+  {
+   "text": "Just call eval(expression) on the user formula and return it.",
+   "expected": true
+  },
+  {
+   "text": "The loader does exec(source) inside the plugin sandbox.",
+   "expected": true
+  },
+  {
+   "text": "Restore state with pickle.loads(blob) from the cache file.",
+   "expected": true
+  },
+  {
+   "text": "They parse it via yaml.load(stream) with no Loader set.",
+   "expected": true
+  },
+  {
+   "text": "Open the tunnel with socket.socket() and bind it locally.",
+   "expected": true
+  },
+  {
+   "text": "The operating system schedules threads across cores.",
+   "expected": false
+  },
+  {
+   "text": "We run evaluations weekly to track model quality.",
+   "expected": false
+  },
+  {
+   "text": "The executive checklist covers hiring and budgets.",
+   "expected": false
+  },
+  {
+   "text": "Import pickle carefully, it is powerful and risky.",
+   "expected": false
+  },
+  {
+   "text": "The YAML file loads quickly in the new parser.",
+   "expected": false
+  },
+  {
+   "text": "A socket set ships with the mechanic toolkit box.",
+   "expected": false
+  },
+  {
+   "text": "Subprocess is a noun in the systems textbook glossary.",
+   "expected": false
+  },
+  {
+   "text": "Dynamic imports are discussed in chapter nine of the guide.",
+   "expected": false
+  }
+ ]
+}

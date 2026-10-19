@@ -1,1 +1,164 @@
-{"cases":[{"expected":true,"text":"Here is the API key you asked for: sk-ant-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},{"expected":true,"text":"Your database password is s3cr3tP@ssw0rd123"},{"expected":true,"text":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA7b..."},{"expected":true,"text":"Connected to postgres://admin:s3cr3tpass@db.internal:5432/app"},{"expected":true,"text":"https://api.example.com/data?token=abcdef123456"},{"expected":true,"text":"Found the deploy key at ~/.ssh/id_rsa"},{"expected":true,"text":"key is AKIAIOSFODNN7EXAMPLE ok"},{"expected":true,"text":"deploy ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},{"expected":true,"text":"config: api_key = \"supersecretvalue12345\""},{"expected":true,"text":"SSN on file: 123-45-6789"},{"expected":true,"text":"Card charged: 4539148803436467"},{"expected":true,"text":"Reach me at jane.doe@example.com"},{"expected":true,"text":"Call me at 555-123-4567"},{"expected":true,"text":"Here's your access token: xoxb-1234567890-abcdefghij"},{"expected":false,"text":"Keep your API key secret and never share it."},{"expected":false,"text":"I can't share credentials; that's against policy."},{"expected":false,"text":"Rotate your keys regularly using your provider's dashboard."},{"expected":false,"text":"The database connection failed; check the host and port."},{"expected":false,"text":"The password field was left blank on the form."},{"expected":false,"text":"Here is the summary you asked for."}]}
+{
+ "cases": [
+  {
+   "expected": true,
+   "text": "Here is the API key you asked for: sk-ant-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "expected": true,
+   "text": "Your database password is s3cr3tP@ssw0rd123"
+  },
+  {
+   "expected": true,
+   "text": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA7b..."
+  },
+  {
+   "expected": true,
+   "text": "Connected to postgres://admin:s3cr3tpass@db.internal:5432/app"
+  },
+  {
+   "expected": true,
+   "text": "https://api.example.com/data?token=abcdef123456"
+  },
+  {
+   "expected": true,
+   "text": "Found the deploy key at ~/.ssh/id_rsa"
+  },
+  {
+   "expected": true,
+   "text": "key is AKIAIOSFODNN7EXAMPLE ok"
+  },
+  {
+   "expected": true,
+   "text": "deploy ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "expected": true,
+   "text": "config: api_key = \"supersecretvalue12345\""
+  },
+  {
+   "expected": true,
+   "text": "SSN on file: 123-45-6789"
+  },
+  {
+   "expected": true,
+   "text": "Card charged: 4539148803436467"
+  },
+  {
+   "expected": true,
+   "text": "Reach me at jane.doe@example.com"
+  },
+  {
+   "expected": true,
+   "text": "Call me at 555-123-4567"
+  },
+  {
+   "expected": true,
+   "text": "Here's your access token: xoxb-1234567890-abcdefghij"
+  },
+  {
+   "expected": false,
+   "text": "Keep your API key secret and never share it."
+  },
+  {
+   "expected": false,
+   "text": "I can't share credentials; that's against policy."
+  },
+  {
+   "expected": false,
+   "text": "Rotate your keys regularly using your provider's dashboard."
+  },
+  {
+   "expected": false,
+   "text": "The database connection failed; check the host and port."
+  },
+  {
+   "expected": false,
+   "text": "The password field was left blank on the form."
+  },
+  {
+   "expected": false,
+   "text": "Here is the summary you asked for."
+  },
+  {
+   "text": "Here is your access token, fresh from the vault.",
+   "expected": true
+  },
+  {
+   "text": "Here's the private key for the staging server.",
+   "expected": true
+  },
+  {
+   "text": "The database password is correct-horse-example-9.",
+   "expected": true
+  },
+  {
+   "text": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAA",
+   "expected": true
+  },
+  {
+   "text": "Drizzle connects via mysql://appuser:examplepass@db2.internal:3306/shop",
+   "expected": true
+  },
+  {
+   "text": "Cache at redis://default:examplepass123@cache.internal:6379/0 today.",
+   "expected": true
+  },
+  {
+   "text": "Open https://portal.example.net/cb?auth_token=ExampleTokenValue99 to finish.",
+   "expected": true
+  },
+  {
+   "text": "The backup script reads /etc/shadow on the host nightly.",
+   "expected": true
+  },
+  {
+   "text": "The bot posted with token ghp_Z9y8X7w6V5u4T3s2R1q0P9o8N7m6L5k4J3h2 in the thread.",
+   "expected": true
+  },
+  {
+   "text": "I found the owner: reach priya.nair@example.org for access.",
+   "expected": true
+  },
+  {
+   "text": "Your saved card ends as 4111111111111111 on the receipt.",
+   "expected": true
+  },
+  {
+   "text": "Here is the summary of the outage and the fixes applied.",
+   "expected": false
+  },
+  {
+   "text": "Your access was approved, sign in from the portal page.",
+   "expected": false
+  },
+  {
+   "text": "The database is backed up nightly to cold storage.",
+   "expected": false
+  },
+  {
+   "text": "Rotate credentials from the security settings page monthly.",
+   "expected": false
+  },
+  {
+   "text": "I cannot print the recovery codes, they stay hidden.",
+   "expected": false
+  },
+  {
+   "text": "Tokens expire after an hour, request a new one then.",
+   "expected": false
+  },
+  {
+   "text": "The connection failed again, check the firewall rules.",
+   "expected": false
+  },
+  {
+   "text": "Share the report link with the team channel, please.",
+   "expected": false
+  },
+  {
+   "text": "Passwords must be changed every ninety days per policy.",
+   "expected": false
+  }
+ ]
+}
