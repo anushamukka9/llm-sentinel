@@ -56,7 +56,9 @@ def redact_spans(
     default.
 
     Spans are applied from the end of the text backwards so offsets stay
-    valid. Overlapping spans collapse into the outermost one.
+    valid. A span fully inside an earlier span is dropped. A span that
+    only partially overlaps is clipped to start where the earlier span
+    ends, so its remaining tail is still redacted instead of leaking.
     """
     spans = sorted(
         (
@@ -68,7 +70,9 @@ def redact_spans(
     merged: list[tuple[int, int, str]] = []
     for start, end, label in spans:
         if merged and start < merged[-1][1]:
-            continue  # inside an already-redacted span
+            if end <= merged[-1][1]:
+                continue  # fully inside an already-redacted span
+            start = merged[-1][1]  # clip the overlap, keep the tail
         merged.append((start, end, label))
     out = text
     for start, end, label in reversed(merged):

@@ -121,6 +121,66 @@ def test_redact_spans_merges_overlaps():
     assert redact_spans(text, findings) == "ab[REDACTED:A]ij"
 
 
+def test_redact_spans_partial_overlap_keeps_tail():
+    from llm_sentinel import Finding
+
+    text = "0123456789AB"
+    findings = [
+        Finding("a", 0.9, 2, 8, "234567", "first"),
+        Finding("b", 0.9, 5, 12, "56789AB", "second"),
+    ]
+    # The second span starts inside the first but extends past it. Its
+    # tail (89AB) must be redacted too, not left in the clear.
+    assert redact_spans(text, findings) == "01[REDACTED:A][REDACTED:B]"
+
+
+def test_redact_spans_overlap_chain():
+    from llm_sentinel import Finding
+
+    text = "abcdefghijklm"
+    findings = [
+        Finding("a", 0.9, 0, 5, "abcde", "first"),
+        Finding("b", 0.9, 4, 9, "efghi", "second"),
+        Finding("c", 0.9, 8, 13, "ijklm", "third"),
+    ]
+    # Each span overlaps the previous one. No character may survive.
+    assert redact_spans(text, findings) == "[REDACTED:A][REDACTED:B][REDACTED:C]"
+
+
+def test_redact_spans_adjacent_spans_both_apply():
+    from llm_sentinel import Finding
+
+    text = "abcdefgh"
+    findings = [
+        Finding("a", 0.9, 0, 4, "abcd", "first"),
+        Finding("b", 0.9, 4, 8, "efgh", "second"),
+    ]
+    assert redact_spans(text, findings) == "[REDACTED:A][REDACTED:B]"
+
+
+def test_vault_redact_partial_overlap_via_scanners():
+    class HeadScanner:
+        name = "head"
+
+        def scan(self, text):
+            from llm_sentinel import Finding
+
+            return [Finding("head", 0.9, 0, 10, text[0:10], "head span")]
+
+    class TailScanner:
+        name = "tail"
+
+        def scan(self, text):
+            from llm_sentinel import Finding
+
+            return [Finding("tail", 0.9, 6, 16, text[6:16], "tail span")]
+
+    vault = Vault([HeadScanner(), TailScanner()], normalize=False)
+    result = vault.scan("0123456789ABCDEF", redact=True)
+    assert result.redacted_text == "[REDACTED:HEAD][REDACTED:TAIL]"
+    assert "ABCDEF" not in (result.redacted_text or "")
+
+
 def test_add_chains():
     vault = Vault().add(PromptInjectionScanner()).add(SecretsScanner())
     assert len(vault.scanners) == 2
