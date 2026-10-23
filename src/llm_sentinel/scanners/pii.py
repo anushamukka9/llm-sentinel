@@ -26,7 +26,11 @@ from .base import find_all, make_finding
 _EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 _PHONE = re.compile(r"(?<!\d)(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}(?!\d)")
 _SSN = re.compile(r"(?<!\d)\d{3}-\d{2}-\d{4}(?!\d)")
-_CARD_CANDIDATE = re.compile(r"(?<!\d)(?:\d[ -]?){13,19}(?!\d)")
+# A candidate must end on a digit. Writing this as (?:\d[ -]?){13,19}
+# lets the last repetition eat a trailing separator, so a card followed
+# by a space matched that space too: the finding span was one character
+# too long and redaction swallowed the space before the next word.
+_CARD_CANDIDATE = re.compile(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)")
 
 
 def luhn_valid(digits: str) -> bool:
