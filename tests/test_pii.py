@@ -41,6 +41,50 @@ def test_credit_card_with_spaces():
     assert scanner.scan("Card 5500 0000 0000 0004 expired.")
 
 
+def _card_findings(text):
+    return [f for f in scanner.scan(text) if "Credit card" in f.message]
+
+
+def test_card_span_ends_on_last_digit_spaced():
+    text = "Card 4111 1111 1111 1111 expired."
+    findings = _card_findings(text)
+    assert len(findings) == 1
+    assert findings[0].matched_text == "4111 1111 1111 1111"
+    assert text[findings[0].start : findings[0].end] == findings[0].matched_text
+    assert findings[0].end == text.index(" expired")
+
+
+def test_card_span_ends_on_last_digit_dashed():
+    text = "Card 4111-1111-1111-1111- was charged"
+    findings = _card_findings(text)
+    assert len(findings) == 1
+    assert findings[0].matched_text == "4111-1111-1111-1111"
+
+
+def test_card_span_ends_on_last_digit_contiguous():
+    text = "Charged 4111111111111111 twice."
+    findings = _card_findings(text)
+    assert len(findings) == 1
+    assert findings[0].matched_text == "4111111111111111"
+    assert text[findings[0].end] == " "
+
+
+def test_card_span_short_and_amex_lengths():
+    for number in ("4222222222222", "378282246310005"):
+        text = f"Card {number} on file"
+        findings = _card_findings(text)
+        assert len(findings) == 1
+        assert findings[0].matched_text == number
+
+
+def test_card_redaction_keeps_following_space():
+    from llm_sentinel import Vault
+
+    vault = Vault([PIIScanner()])
+    result = vault.scan("Card 4111 1111 1111 1111 expired", redact=True)
+    assert result.redacted_text == "Card [REDACTED:PII] expired"
+
+
 def test_luhn_invalid_number_not_flagged():
     assert scanner.scan("Invoice 4111111111111112 pending.") == []
 
