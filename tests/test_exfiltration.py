@@ -100,6 +100,15 @@ def test_plain_summary_is_quiet():
     assert scanner.scan("Here is the summary you asked for.") == []
 
 
+def test_openai_project_key_flagged_on_output_side():
+    # The delegated secrets scanner carries the fix: a project key in a
+    # model response flags even with the entropy heuristic off.
+    key = "sk-proj-" + "Ab1Cd2Ef3" + "-Gh4Ij5Kl6" + "_Mn7Op8Qr9"
+    quiet = ExfiltrationScanner(entropy_scan=False)
+    findings = quiet.scan("the key is " + key)
+    assert findings and all(f.scanner == "exfiltration" for f in findings)
+
+
 def test_sub_scanner_findings_carry_exfiltration_name():
     findings = scanner.scan("key is AKIAIOSFODNN7EXAMPLE ok")
     assert findings

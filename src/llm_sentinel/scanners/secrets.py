@@ -3,6 +3,11 @@
 Detects credentials that should never appear in a prompt or a model
 output: provider API keys (AWS, GitHub, Slack, Stripe, OpenAI, Anthropic),
 generic ``key = value`` assignments, and unlabelled high-entropy tokens.
+The AWS pattern covers both long-term key ids (``AKIA``) and temporary
+session key ids (``ASIA``) from STS. The OpenAI patterns cover the legacy
+``sk-`` keys and the current project and service-account keys
+(``sk-proj-`` / ``sk-svcacct-``), whose bodies are hyphen-separated
+segments, so a single alphanumeric run never matches them.
 
 Limitations, stated plainly:
 - Regexes cover the well-known formats. Private or in-house key formats
@@ -22,7 +27,9 @@ from ..core import Finding, Scanner
 from .base import find_all, looks_random, make_finding
 
 _NAMED: list[tuple[str, re.Pattern[str], float]] = [
-    ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b"), 0.98),
+    # AKIA is a long-term access key id; ASIA is the temporary session
+    # key id STS hands out. Both are live credentials in text.
+    ("AWS access key", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"), 0.98),
     (
         "GitHub token",
         re.compile(r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b"),
@@ -40,6 +47,14 @@ _NAMED: list[tuple[str, re.Pattern[str], float]] = [
     ),
     ("Stripe key", re.compile(r"\b[rs]k_(?:live|test)_[A-Za-z0-9]{16,}\b"), 0.97),
     ("OpenAI key", re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"), 0.95),
+    (
+        # Project and service-account keys: the body after the prefix is
+        # hyphen/underscore-separated segments, so the legacy run above
+        # stops at the first hyphen and never reaches 20 characters.
+        "OpenAI project key",
+        re.compile(r"\bsk-(?:proj|svcacct)-[A-Za-z0-9_-]{20,}\b"),
+        0.95,
+    ),
     (
         "Anthropic key",
         re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b"),
