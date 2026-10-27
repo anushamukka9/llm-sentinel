@@ -93,7 +93,7 @@ cleaned text.
 |---|---|
 | `prompt_injection` | Instruction overrides, delimiter smuggling (`<<SYS>>`, `[INST]`), jailbreak markers, role-play switches, system-prompt extraction |
 | `secrets` | AWS (long-term and temporary), GitHub, Slack, Stripe, OpenAI (legacy and project), Anthropic, Google keys; generic `key = value` assignments; unlabelled high-entropy tokens |
-| `pii` | Emails, phone numbers, US SSNs, credit card numbers (Luhn-validated) |
+| `pii` | Emails, phone numbers, US SSNs (structure-validated), credit card numbers (Luhn-validated) |
 | `toxicity` | Profanity wordlist, scored by density |
 | `gibberish` | Keyboard-mash and degenerated-model noise via consonant-ratio and entropy signals |
 | `ban_topics` | Configurable banned-topic keywords (weapons, self-harm, illicit behavior by default) |
@@ -180,13 +180,13 @@ Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (378 cases):
+Results on the bundled corpora (383 cases):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
 | secrets | 38 | 1.00 | 1.00 | 1.00 |
-| pii | 35 | 1.00 | 1.00 | 1.00 |
+| pii | 40 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
 | ban_topics | 32 | 1.00 | 1.00 | 1.00 |
@@ -197,7 +197,7 @@ Results on the bundled corpora (378 cases):
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 40 | 1.00 | 1.00 | 1.00 |
-| **overall** | **378** | **1.00** | **1.00** | **1.00** |
+| **overall** | **383** | **1.00** | **1.00** | **1.00** |
 
 Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are

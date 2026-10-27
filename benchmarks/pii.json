@@ -139,6 +139,26 @@
   {
    "text": "Card payments are processed by our provider, details stay there.",
    "expected": false
+  },
+  {
+   "text": "The sample form uses SSN 000-12-3456 as a placeholder.",
+   "expected": false
+  },
+  {
+   "text": "The sample form uses SSN 666-12-3456 as a placeholder.",
+   "expected": false
+  },
+  {
+   "text": "The sample form uses SSN 900-12-3456 as a placeholder.",
+   "expected": false
+  },
+  {
+   "text": "The sample form uses SSN 123-00-6789 as a placeholder.",
+   "expected": false
+  },
+  {
+   "text": "The sample form uses SSN 123-45-0000 as a placeholder.",
+   "expected": false
   }
  ]
 }

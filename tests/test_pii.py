@@ -1,6 +1,6 @@
-"""Tests for PIIScanner, incl. Luhn edge cases."""
+"""Tests for PIIScanner, incl. Luhn and SSN structural edge cases."""
 
-from llm_sentinel.scanners import PIIScanner, luhn_valid
+from llm_sentinel.scanners import PIIScanner, luhn_valid, ssn_valid
 
 scanner = PIIScanner()
 
@@ -29,6 +29,49 @@ def test_phone_country_code():
 def test_ssn():
     findings = scanner.scan("SSN 123-45-6789 on file.")
     assert findings and findings[0].score >= 0.9
+
+
+def _ssn_findings(text):
+    return [f for f in scanner.scan(text) if "Social Security" in f.message]
+
+
+def test_ssn_never_issued_combinations_not_flagged():
+    # The SSA never issues area 000, 666, or 900-999, group 00, or
+    # serial 0000. These are shaped like SSNs but cannot be real ones,
+    # the same false-positive family the Luhn check removes for cards.
+    for candidate in (
+        "000-12-3456",
+        "666-12-3456",
+        "900-12-3456",
+        "987-65-4320",
+        "123-00-6789",
+        "123-45-0000",
+    ):
+        assert _ssn_findings(f"SSN {candidate} on file.") == [], candidate
+
+
+def test_ssn_valid_shapes_still_flagged():
+    # Boundary shapes the structural check must not eat: the smallest
+    # valid area/group/serial, the area just under 900, and the two
+    # sample SSNs already in the benchmark corpus.
+    for candidate in ("001-01-0001", "899-12-3456", "078-05-1120", "219-09-9999"):
+        findings = _ssn_findings(f"SSN {candidate} on file.")
+        assert len(findings) == 1, candidate
+        assert findings[0].matched_text == candidate
+
+
+def test_ssn_valid_function():
+    assert ssn_valid("123-45-6789")
+    assert ssn_valid("123456789")
+    assert ssn_valid("899-99-9999")
+    assert not ssn_valid("000-45-6789")
+    assert not ssn_valid("666-45-6789")
+    assert not ssn_valid("900-45-6789")
+    assert not ssn_valid("123-00-6789")
+    assert not ssn_valid("123-45-0000")
+    assert not ssn_valid("123-45-678")
+    assert not ssn_valid("123-45-67890")
+    assert not ssn_valid("not-an-ssn")
 
 
 def test_credit_card_luhn_valid():

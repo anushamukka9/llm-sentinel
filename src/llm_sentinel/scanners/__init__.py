@@ -5,7 +5,7 @@ from .code_execution import CodeExecutionScanner
 from .exfiltration import ExfiltrationScanner
 from .gibberish import GibberishScanner
 from .obfuscation import ObfuscationScanner
-from .pii import PIIScanner, luhn_valid
+from .pii import PIIScanner, luhn_valid, ssn_valid
 from .prompt_injection import PromptInjectionScanner
 from .prompt_leak import PromptLeakScanner
 from .regex_scan import RegexScanner
@@ -31,6 +31,7 @@ __all__ = [
     "URLAllowlistScanner",
     "estimate_tokens",
     "luhn_valid",
+    "ssn_valid",
     "default_scanners",
 ]
 
