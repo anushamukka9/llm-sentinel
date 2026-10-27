@@ -29,6 +29,52 @@ def test_openai_key():
     assert scanner.scan("OPENAI=" + "sk-" + "a" * 32)
 
 
+def test_openai_project_key():
+    # Current default key format: hyphen-separated segments after the
+    # sk-proj- prefix. Built by concatenation like the other fake keys.
+    key = "sk-proj-" + "Ab1Cd2Ef3" + "-Gh4Ij5Kl6" + "_Mn7Op8Qr9" + "-St0UvWx2Yz3"
+    findings = scanner.scan("key " + key + " here")
+    named = [f for f in findings if "OpenAI project key" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == key
+
+
+def test_openai_project_key_without_entropy_scan():
+    # With the entropy heuristic off, the named pattern alone must catch
+    # project keys; before the fix this scan came back empty.
+    s = SecretsScanner(entropy_scan=False)
+    key = "sk-proj-" + "Ab1Cd2Ef3" + "-Gh4Ij5Kl6" + "_Mn7Op8Qr9"
+    findings = s.scan("key " + key + " here")
+    assert findings and "OpenAI project key" in findings[0].message
+
+
+def test_openai_service_account_key():
+    s = SecretsScanner(entropy_scan=False)
+    key = "sk-svcacct-" + "Ab1Cd2Ef3" + "-Gh4Ij5Kl6" + "_Mn7Op8Qr9"
+    findings = s.scan("key " + key + " here")
+    assert findings and "OpenAI project key" in findings[0].message
+
+
+def test_openai_project_key_single_finding():
+    # The bare-token heuristic must not add a second, weaker finding on
+    # top of the named match for the same key.
+    key = "sk-proj-" + "Ab1Cd2Ef3" + "-Gh4Ij5Kl6" + "_Mn7Op8Qr9" + "-St0UvWx2Yz3"
+    findings = scanner.scan("key " + key + " here")
+    assert len(findings) == 1
+
+
+def test_openai_project_prefix_alone_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("the sk-proj- prefix starts a project key") == []
+
+
+def test_aws_temporary_key():
+    # ASIA ids are STS temporary credentials, same leak as AKIA.
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("temp key " + "ASIA" + "1234567890ABCDEF" + " in env")
+    assert findings and "AWS" in findings[0].message
+
+
 def test_generic_assignment():
     findings = scanner.scan('config: api_key = "supersecretvalue12345"')
     assert findings

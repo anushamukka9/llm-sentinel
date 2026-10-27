@@ -37,7 +37,7 @@ from .scanners import (
 from .vault import COLLECT_ALL, FAIL_FAST, Vault, redact_spans
 from .wrapper import GuardedError, guarded
 
-__version__ = "0.6.3"
+__version__ = "0.7.0"
 
 __all__ = [
     "COLLECT_ALL",

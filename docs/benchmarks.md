@@ -8,13 +8,13 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (375 cases, measured 2026-10-18 against
-v0.6.1):
+Results on the bundled corpora (378 cases, measured 2026-10-27 against
+v0.7.0):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
-| secrets | 35 | 1.00 | 1.00 | 1.00 |
+| secrets | 38 | 1.00 | 1.00 | 1.00 |
 | pii | 35 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
@@ -26,7 +26,7 @@ v0.6.1):
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 40 | 1.00 | 1.00 | 1.00 |
-| **overall** | **375** | **1.00** | **1.00** | **1.00** |
+| **overall** | **378** | **1.00** | **1.00** | **1.00** |
 
 The October 2026 expansion added 200 cases (175 to 375), weighted toward
 the newer scanners: exfiltration and prompt_injection doubled, and every
@@ -69,12 +69,12 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (375 cases, measured 2026-10-18 against v0.6.1):
+Results (378 cases, measured 2026-10-27 against v0.7.0):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| secrets | 35 | 1.00 | 1.00 | 1.00 | 1.00 | 0.84 | 0.84 | 1.00 |
+| secrets | 38 | 1.00 | 1.00 | 1.00 | 1.00 | 0.82 | 0.82 | 1.00 |
 | pii | 35 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
@@ -86,14 +86,14 @@ Results (375 cases, measured 2026-10-18 against v0.6.1):
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
-| **overall** | **375** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
+| **overall** | **378** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
 evasion in every row. The cells that are not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
-- `secrets` mixed_case 0.84: the transform defangs the secret. A
+- `secrets` mixed_case 0.82: the transform defangs the secret. A
   mixed-case `AkIa...` is not a well-formed AWS key, so the scanner is
   right to stay quiet. The cases that survive are the ones whose format
   is case-insensitive by design (generic assignments, hex tokens).
