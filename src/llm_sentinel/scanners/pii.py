@@ -1,8 +1,10 @@
 """PII scanner.
 
 Detects common personally identifying information: email addresses, phone
-numbers, US Social Security numbers, and credit card numbers (validated
-with the Luhn check so random 16-digit strings do not flag).
+numbers, US Social Security numbers, and credit card numbers. Card numbers
+are validated with the Luhn check so random 16-digit strings do not flag,
+and SSNs are validated against the Social Security Administration's
+structural rules so combinations the SSA never issues do not flag either.
 
 Limitations, stated plainly:
 - Coverage is deliberately narrow (email, phone, SSN, card). Names,
@@ -12,6 +14,10 @@ Limitations, stated plainly:
   non-phone number sequences and miss international formats.
 - The Luhn check removes most false positives on card numbers, but a
   Luhn-valid number is not proof it is a real card.
+- The SSN check is structural only: it rejects area numbers 000, 666,
+  and 900-999, group number 00, and serial number 0000, because the SSA
+  never issues those. A structurally valid SSN is not proof the number
+  was issued, or that it belongs to the person in the text.
 - Context is ignored: "my email is X" and "contact support@example.com"
   both flag. Decide in your policy whether that is acceptable.
 """
@@ -31,6 +37,23 @@ _SSN = re.compile(r"(?<!\d)\d{3}-\d{2}-\d{4}(?!\d)")
 # by a space matched that space too: the finding span was one character
 # too long and redaction swallowed the space before the next word.
 _CARD_CANDIDATE = re.compile(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)")
+
+
+def ssn_valid(ssn: str) -> bool:
+    """True when an SSN passes the SSA structural validity rules.
+
+    Accepts the dashed form (``123-45-6789``) or nine bare digits.
+    The SSA never issues an area number (first three digits) of 000,
+    666, or 900-999, a group number (middle two) of 00, or a serial
+    number (last four) of 0000, so any candidate with one of those
+    cannot be a real SSN. This is a shape check, not an issuance
+    check: plenty of structurally valid numbers were never issued.
+    """
+    digits = ssn.replace("-", "")
+    if len(digits) != 9 or not digits.isdigit():
+        return False
+    area, group, serial = int(digits[:3]), int(digits[3:5]), int(digits[5:])
+    return area not in (0, 666) and area < 900 and group != 0 and serial != 0
 
 
 def luhn_valid(digits: str) -> bool:
@@ -58,7 +81,8 @@ class PIIScanner(Scanner):
         for match in find_all(_PHONE, text):
             findings.append(make_finding(self.name, match, 0.7, "Possible phone number"))
         for match in find_all(_SSN, text):
-            findings.append(make_finding(self.name, match, 0.95, "US Social Security number"))
+            if ssn_valid(match.group()):
+                findings.append(make_finding(self.name, match, 0.95, "US Social Security number"))
         for match in find_all(_CARD_CANDIDATE, text):
             digits = re.sub(r"[ -]", "", match.group())
             if not digits.isdigit() or not 13 <= len(digits) <= 19:

@@ -66,6 +66,13 @@ def test_ssn_flagged():
     assert "Social Security" in findings[0].message
 
 
+def test_never_issued_ssn_is_quiet_on_output_side():
+    # The delegated PII scanner carries the structural check: a
+    # never-issued combination in a model response does not flag.
+    findings = scanner.scan("SSN on file: 666-12-3456")
+    assert [f for f in findings if "Social Security" in f.message] == []
+
+
 def test_card_flagged():
     findings = scanner.scan("Card charged: 4539148803436467")
     assert findings

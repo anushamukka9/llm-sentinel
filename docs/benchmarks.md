@@ -8,14 +8,14 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (378 cases, measured 2026-10-27 against
-v0.7.0):
+Results on the bundled corpora (383 cases, measured 2026-10-27 against
+v0.7.1):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
 | secrets | 38 | 1.00 | 1.00 | 1.00 |
-| pii | 35 | 1.00 | 1.00 | 1.00 |
+| pii | 40 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
 | ban_topics | 32 | 1.00 | 1.00 | 1.00 |
@@ -26,7 +26,7 @@ v0.7.0):
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 40 | 1.00 | 1.00 | 1.00 |
-| **overall** | **378** | **1.00** | **1.00** | **1.00** |
+| **overall** | **383** | **1.00** | **1.00** | **1.00** |
 
 The October 2026 expansion added 200 cases (175 to 375), weighted toward
 the newer scanners: exfiltration and prompt_injection doubled, and every
@@ -69,13 +69,13 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (378 cases, measured 2026-10-27 against v0.7.0):
+Results (383 cases, measured 2026-10-27 against v0.7.1):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | secrets | 38 | 1.00 | 1.00 | 1.00 | 1.00 | 0.82 | 0.82 | 1.00 |
-| pii | 35 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| pii | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | ban_topics | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
@@ -86,7 +86,7 @@ Results (378 cases, measured 2026-10-27 against v0.7.0):
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
-| **overall** | **378** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
+| **overall** | **383** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
 evasion in every row. The cells that are not 1.00 are worth reading
