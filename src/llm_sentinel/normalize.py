@@ -123,13 +123,28 @@ def normalize_with_map(text: str) -> tuple[str, list[int]]:
     ``index_map[i]`` is the index in the original text of the character
     that produced normalized character ``i``. Use it to translate scanner
     match offsets back to the original text.
+
+    Performance note: most real traffic is plain ASCII, and ASCII is a
+    fixed point of this whole pass (no ASCII character is stripped, none
+    is a confusable key, and NFKC maps every ASCII character to itself).
+    Pure-ASCII text takes a fast path that skips the per-character
+    ``unicodedata.normalize`` call, which was the single hottest loop in
+    the pipeline. Mixed text still pays for NFKC, but only on its
+    non-ASCII characters. The output is identical either way; the
+    equivalence is pinned by tests in ``tests/test_perf.py``.
     """
+    if text.isascii():
+        return text, list(range(len(text)))
     out: list[str] = []
     index_map: list[int] = []
     for i, ch in enumerate(text):
         if ch in _STRIPPED:
             continue
         ch = _CONFUSABLES.get(ch, ch)
+        if ch.isascii():
+            out.append(ch)
+            index_map.append(i)
+            continue
         for nch in unicodedata.normalize("NFKC", ch):
             out.append(nch)
             index_map.append(i)

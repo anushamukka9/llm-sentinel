@@ -132,10 +132,85 @@ Two real bugs came out of building this eval, both fixed in v0.4.0:
   case-insensitive per RFC 3986, so `hTTpS://evil.example` is a URL;
   the extractor regex is now case-insensitive too.
 
+## Latency
+
+Measured 2026-11-14, before (v0.7.1) and after (v0.7.2) the
+performance pass. The harness ships with the package, so you can run
+the same table on your own machine:
+
+```bash
+python -m llm_sentinel.perf
+```
+
+Method: median of five runs, each run timing a fixed number of scans
+with `time.perf_counter` and dividing, on one shared development VM
+running Python 3.12. Four fixed texts: a short prompt (87 chars), a
+medium document (1,536 chars), a long document (15,360 chars), and a
+short attack string (161 chars). "Vault, full" is the default
+scanners plus the three opt-in ones (obfuscation, prompt_leak,
+exfiltration).
+
+| measurement | before | after | change |
+|---|---|---|---|
+| Vault (default), short | 0.204 ms | 0.180 ms | 12% faster |
+| Vault (default), medium | 3.047 ms | 2.595 ms | 15% faster |
+| Vault (default), long | 30.630 ms | 25.520 ms | 17% faster |
+| Vault (default), attack | 0.368 ms | 0.329 ms | 11% faster |
+| Vault (full), medium | 5.737 ms | 4.600 ms | 20% faster |
+| Vault (full), long | 56.038 ms | 44.320 ms | 21% faster |
+| Normalization only, medium | 0.336 ms | 0.025 ms | about 13x faster |
+| Normalization only, long | 3.527 ms | 0.276 ms | about 13x faster |
+| Obfuscation scanner, medium | 1.639 ms | 0.750 ms | about 2.2x faster |
+| Obfuscation scanner, long | 15.798 ms | 7.433 ms | about 2.1x faster |
+
+What changed, in the order it mattered:
+
+- Normalization ran `unicodedata.normalize` once per character. Plain
+  ASCII is a fixed point of the whole pass (nothing to strip, no
+  confusable keys, NFKC is the identity on ASCII), so ASCII text now
+  takes a fast path, and mixed text only pays for NFKC on its
+  non-ASCII characters. Most real prompts are ASCII, which is why
+  this one change dominates the table.
+- The obfuscation scanner recompiled two of its patterns on every
+  scan; they are compiled once in the constructor now. Its
+  control-character check built a regex match object per character;
+  it loops over the characters directly. Its script counts used
+  `findall` lists it immediately threw away; they count with
+  `finditer` now. And its folded re-check is skipped for pure-ASCII
+  text, where folding provably changes nothing.
+- The Vault compared the normalized copy against the original once
+  per scanner to decide whether offsets needed remapping. That was a
+  full extra pass over the text for every scanner; it is decided once
+  per scan now.
+- Smaller stuff in the same spirit: precompiled patterns for the card
+  separator cleanup in PII and the token-shape checks behind the
+  secrets entropy heuristic, and a single-pass consonant ratio in the
+  gibberish scanner.
+
+Honest limits on these numbers:
+
+- No behavior changed. The 383-case benchmark above still reads 1.00
+  across the board, the adversarial eval table is unchanged, and new
+  tests in `tests/test_perf.py` pin the optimized normalization and
+  obfuscation paths to the original algorithms output for output.
+  Speed claims without that check would just be a faster way to be
+  wrong.
+- The end-to-end gain is real but modest, because the remaining cost
+  is structural: every scanner walks the text with its own set of
+  patterns (ban_topics alone runs 22). Merging patterns into a single
+  pass would change which findings come back and how they are scored,
+  so I did not do it. If scan latency ever matters more than finding
+  granularity, that is the lever, and it is a behavior change, not an
+  optimization.
+- One shared VM is a noisy place to measure. Expect plus or minus
+  10% between runs of the harness; the medians above are the middle
+  of five runs, not a best case.
+
 ## What the benchmark does not measure
 
-- Latency or throughput. There is a performance pass on the roadmap;
-  the numbers will go here when it lands.
+- Latency on your workload. The latency table above is four fixed
+  synthetic texts on one machine; run the shipped harness on your own
+  traffic and hardware before quoting any of it.
 - Paraphrase, leetspeak, non-English attacks, or meaning-level evasion.
   The adversarial transforms are typographic only. Those need a real red
   team, not string munging.

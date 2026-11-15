@@ -40,6 +40,10 @@ def shannon_entropy(s: str) -> float:
     return -sum((c / length) * math.log2(c / length) for c in counts.values())
 
 
+_TOKEN_SHAPE = re.compile(r"[A-Za-z0-9_\-+/=]+")
+_HEX_SHAPE = re.compile(r"[0-9a-fA-F]+")
+
+
 def looks_random(token: str, *, min_length: int = 20, min_entropy: float = 4.2) -> bool:
     """Heuristic: long, high-entropy alphanumeric token.
 
@@ -51,9 +55,9 @@ def looks_random(token: str, *, min_length: int = 20, min_entropy: float = 4.2) 
     and it will flag things like hashes that are not secrets at all. That
     is the documented trade-off.
     """
-    if not re.fullmatch(r"[A-Za-z0-9_\-+/=]+", token):
+    if not _TOKEN_SHAPE.fullmatch(token):
         return False
-    if re.fullmatch(r"[0-9a-fA-F]+", token):
+    if _HEX_SHAPE.fullmatch(token):
         return len(token) >= 32 and shannon_entropy(token) >= 3.7
     if len(token) < min_length:
         return False

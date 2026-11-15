@@ -27,15 +27,21 @@ from ..core import Finding, Scanner
 from .base import find_all, make_finding, shannon_entropy
 
 _WORD = re.compile(r"[A-Za-z]{4,}")
+_WHITESPACE = re.compile(r"\s+")
 _VOWELS = set("aeiouAEIOU")
 
 
 def _consonant_ratio(word: str) -> float:
-    letters = [c for c in word if c.isalpha()]
+    letters = 0
+    consonants = 0
+    for c in word:
+        if c.isalpha():
+            letters += 1
+            if c not in _VOWELS:
+                consonants += 1
     if not letters:
         return 0.0
-    consonants = sum(1 for c in letters if c not in _VOWELS)
-    return consonants / len(letters)
+    return consonants / letters
 
 
 class GibberishScanner(Scanner):
@@ -96,7 +102,7 @@ class GibberishScanner(Scanner):
                 )
             return findings
 
-        entropy = shannon_entropy(re.sub(r"\s+", "", text))
+        entropy = shannon_entropy(_WHITESPACE.sub("", text))
         if not 2.8 <= entropy <= 5.2:
             findings.append(
                 Finding(

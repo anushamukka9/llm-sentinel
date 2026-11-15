@@ -37,6 +37,7 @@ _SSN = re.compile(r"(?<!\d)\d{3}-\d{2}-\d{4}(?!\d)")
 # by a space matched that space too: the finding span was one character
 # too long and redaction swallowed the space before the next word.
 _CARD_CANDIDATE = re.compile(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)")
+_CARD_SEPARATORS = re.compile(r"[ -]")
 
 
 def ssn_valid(ssn: str) -> bool:
@@ -84,7 +85,7 @@ class PIIScanner(Scanner):
             if ssn_valid(match.group()):
                 findings.append(make_finding(self.name, match, 0.95, "US Social Security number"))
         for match in find_all(_CARD_CANDIDATE, text):
-            digits = re.sub(r"[ -]", "", match.group())
+            digits = _CARD_SEPARATORS.sub("", match.group())
             if not digits.isdigit() or not 13 <= len(digits) <= 19:
                 continue
             if luhn_valid(digits):

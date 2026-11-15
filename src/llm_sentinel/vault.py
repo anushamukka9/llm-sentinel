@@ -194,12 +194,16 @@ class Vault:
         index_map: list[int] | None = None
         if self.normalize:
             scan_text, index_map = normalize_with_map(text)
+        # Decided once, not per scanner: comparing the normalized copy
+        # against the original inside the loop was a full extra pass
+        # over the text for every scanner in the Vault.
+        remap = index_map is not None and scan_text != text
         for scanner in self.scanners:
             # Scanners that opted out (normalize_input = False) see the
             # raw text; everyone else sees the normalized copy.
             raw = getattr(scanner, "normalize_input", True) is False
             found = scanner.scan(text if raw else scan_text)
-            if index_map is not None and not raw and scan_text != text:
+            if remap and not raw:
                 found = [_remap_finding(f, text, index_map) for f in found]
             findings.extend(found)
             if found and self.mode == FAIL_FAST:
