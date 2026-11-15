@@ -215,6 +215,14 @@ evasion at 1.00 almost everywhere; the few misses are documented honestly
 in [docs/benchmarks.md](docs/benchmarks.md), including the two real bugs
 this eval caught (uppercased homoglyphs, mixed-case URL schemes).
 
+Latency is measured too: `python -m llm_sentinel.perf` times the full
+pipeline on short, medium, and long texts. The v0.7.2 performance pass
+made a default Vault scan about 15% faster end to end (normalization
+alone about 13x faster on plain ASCII, the obfuscation scanner about
+2.2x faster), with the accuracy tables above unchanged. Before/after
+numbers and the honest limits are in
+[docs/benchmarks.md](docs/benchmarks.md).
+
 ## Policy eval
 
 The per-scanner benchmarks above measure scanners in isolation. The

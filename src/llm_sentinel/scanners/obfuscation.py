@@ -46,16 +46,29 @@ _WORD = re.compile(r"[^\W\d_]+")
 _FULLWIDTH_CHARS = "\uff01-\uff5e"
 
 
-def _control_chars(text: str) -> list[re.Match[str]]:
-    hits = []
-    for match in re.finditer(r".", text, re.DOTALL):
-        ch = match.group()
+_ZERO_WIDTH_CHARS = frozenset("\u200b\u200c\u200d\ufeff")
+_BIDI_CHARS = frozenset("\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069\u200e\u200f")
+
+
+def _control_char_spans(text: str) -> list[tuple[int, int]]:
+    """Spans of stray control characters, as (start, end) pairs.
+
+    The old version built a regex match object per character with
+    ``re.finditer(r".", text)``; on a long text that was most of this
+    scanner's time. A plain loop over the characters reports exactly
+    the same spans: tabs, newlines, and carriage returns are allowed,
+    zero-width and bidi characters are skipped here because their own
+    sharper signals above already report them, and the rest is the
+    ``Cc``/``Cf`` category check.
+    """
+    hits: list[tuple[int, int]] = []
+    for i, ch in enumerate(text):
         if ch in "\t\n\r":
             continue
-        if _ZERO_WIDTH.match(ch) or _BIDI.match(ch):
-            continue  # reported by their own, sharper signals above
+        if ch in _ZERO_WIDTH_CHARS or ch in _BIDI_CHARS:
+            continue
         if unicodedata.category(ch) in ("Cc", "Cf"):
-            hits.append(match)
+            hits.append((i, i + 1))
     return hits
 
 
@@ -83,6 +96,10 @@ class ObfuscationScanner(Scanner):
         self.blob_min_length = blob_min_length
         self.min_entropy = min_entropy
         self.fullwidth_min_length = fullwidth_min_length
+        # Compiled once here, not on every scan: these two patterns
+        # depend only on the constructor arguments.
+        self._fullwidth_rx = re.compile(rf"[{_FULLWIDTH_CHARS}]{{{fullwidth_min_length},}}")
+        self._blob_rx = re.compile(rf"[A-Za-z0-9+/=]{{{blob_min_length},}}")
 
     def scan(self, text: str) -> list[Finding]:
         findings: list[Finding] = []
@@ -97,8 +114,17 @@ class ObfuscationScanner(Scanner):
             )
         for match in find_all(_BIDI, text):
             findings.append(make_finding(self.name, match, 0.9, "Unicode direction override"))
-        for match in _control_chars(text):
-            findings.append(make_finding(self.name, match, 0.7, "Stray control character"))
+        for start, end in _control_char_spans(text):
+            findings.append(
+                Finding(
+                    scanner=self.name,
+                    score=0.7,
+                    start=start,
+                    end=end,
+                    matched_text=text[start:end],
+                    message="Stray control character",
+                )
+            )
         escape_spans: list[tuple[int, int]] = []
         for match in find_all(_LITERAL_ESCAPE, text):
             escape_spans.append(match.span())
@@ -110,8 +136,7 @@ class ObfuscationScanner(Scanner):
                     "Literal unicode escape (possible obfuscated payload)",
                 )
             )
-        fullwidth_rx = re.compile(rf"[{_FULLWIDTH_CHARS}]{{{self.fullwidth_min_length},}}")
-        for match in find_all(fullwidth_rx, text):
+        for match in find_all(self._fullwidth_rx, text):
             findings.append(
                 make_finding(
                     self.name,
@@ -120,9 +145,11 @@ class ObfuscationScanner(Scanner):
                     "Fullwidth character run (possible lookalike evasion)",
                 )
             )
-        latin = len(_LATIN.findall(text))
-        cyrillic = len(_CYRILLIC.findall(text))
-        greek = len(_GREEK.findall(text))
+        # Counts only: finditer avoids building three throwaway lists
+        # of one-character strings on every scan.
+        latin = sum(1 for _ in _LATIN.finditer(text))
+        cyrillic = sum(1 for _ in _CYRILLIC.finditer(text))
+        greek = sum(1 for _ in _GREEK.finditer(text))
         mixed_spans: list[tuple[int, int]] = []
         if latin >= 10 and (cyrillic + greek) >= 2:
             for match in find_all(_MIXED_RUN, text):
@@ -160,9 +187,8 @@ class ObfuscationScanner(Scanner):
                     "Mixed-script word (possible homoglyph attack)",
                 )
             )
-        blob_rx = re.compile(rf"[A-Za-z0-9+/=]{{{self.blob_min_length},}}")
         blob_spans: list[tuple[int, int]] = []
-        for match in find_all(blob_rx, text):
+        for match in find_all(self._blob_rx, text):
             blob = match.group().rstrip("=")
             if len(blob) >= self.blob_min_length and shannon_entropy(blob) >= self.min_entropy:
                 blob_spans.append(match.span())
@@ -171,7 +197,7 @@ class ObfuscationScanner(Scanner):
                         self.name, match, 0.55, "Long high-entropy blob (possible encoded payload)"
                     )
                 )
-        findings.extend(self._folded_findings(text, escape_spans, blob_spans, blob_rx))
+        findings.extend(self._folded_findings(text, escape_spans, blob_spans, self._blob_rx))
         return findings
 
     def _folded_findings(
@@ -190,6 +216,11 @@ class ObfuscationScanner(Scanner):
         map the spans back to the original text. Spans that overlap a raw
         finding are the same signal seen twice, so they are skipped.
         """
+        if text.isascii():
+            # Folding cannot change pure-ASCII text (normalization is
+            # the identity there), so the folded pass would find
+            # exactly what the raw pass already found. Skip it.
+            return []
         folded, index_map = normalize_with_map(text)
         if folded == text:
             return []
