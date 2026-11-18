@@ -8,13 +8,13 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (383 cases, measured 2026-10-27 against
-v0.7.1):
+Results on the bundled corpora (389 cases, measured 2026-11-17 against
+v0.7.3):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
-| secrets | 38 | 1.00 | 1.00 | 1.00 |
+| secrets | 42 | 1.00 | 1.00 | 1.00 |
 | pii | 40 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
@@ -25,8 +25,8 @@ v0.7.1):
 | regex | 20 | 1.00 | 1.00 | 1.00 |
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 40 | 1.00 | 1.00 | 1.00 |
-| **overall** | **383** | **1.00** | **1.00** | **1.00** |
+| exfiltration | 42 | 1.00 | 1.00 | 1.00 |
+| **overall** | **389** | **1.00** | **1.00** | **1.00** |
 
 The October 2026 expansion added 200 cases (175 to 375), weighted toward
 the newer scanners: exfiltration and prompt_injection doubled, and every
@@ -37,6 +37,15 @@ honest caveat, doubled: a bigger hand-written corpus is still a
 hand-written corpus, written by the same person who wrote the patterns.
 It proves broader coverage of the obvious cases, not robustness in the
 wild.
+
+The November 2026 addition is smaller: six cases for the new JWT check
+in the secrets scanner (four in `secrets`, two in `exfiltration`, which
+inherits the check through delegation). Two positives are real-shaped
+tokens, one in a sentence and one in a Bearer header. The negatives are
+the point of the feature: a dotted three-segment blob that decodes to
+nothing, and a token whose header is a valid JWT header but whose
+payload is plain text, not JSON. Both stay quiet, because the check
+validates the decode instead of trusting the shape.
 
 ## What these numbers actually mean
 
@@ -69,12 +78,12 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (383 cases, measured 2026-10-27 against v0.7.1):
+Results (389 cases, measured 2026-11-17 against v0.7.3):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| secrets | 38 | 1.00 | 1.00 | 1.00 | 1.00 | 0.82 | 0.82 | 1.00 |
+| secrets | 42 | 1.00 | 1.00 | 1.00 | 1.00 | 0.83 | 0.83 | 0.98 |
 | pii | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
@@ -85,18 +94,30 @@ Results (383 cases, measured 2026-10-27 against v0.7.1):
 | regex | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
-| **overall** | **383** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
+| exfiltration | 42 | 1.00 | 1.00 | 1.00 | 1.00 | 0.77 | 0.77 | 1.00 |
+| **overall** | **389** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
 evasion in every row. The cells that are not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
-- `secrets` mixed_case 0.82: the transform defangs the secret. A
+- `secrets` mixed_case 0.83: the transform defangs the secret. A
   mixed-case `AkIa...` is not a well-formed AWS key, so the scanner is
   right to stay quiet. The cases that survive are the ones whose format
-  is case-insensitive by design (generic assignments, hex tokens).
+  is case-insensitive by design (generic assignments, hex tokens). The
+  JWT cases added in v0.7.3 behave the same way: a case-mangled token
+  no longer decodes to a JSON header, so it is not a working token
+  anymore, and the validated check stays quiet on it.
+- `secrets` neg_ok 0.98 (was 1.00 before the JWT cases): the one
+  transformed negative that flags is not the JWT check misfiring. The
+  mixed-case transform rewrites a benign dotted blob's payload segment
+  into a mixed-case string diverse enough to trip the older entropy
+  heuristic. With the entropy heuristic off, the transformed text is
+  clean and `jwt_valid` rejects the mangled token outright. The dip
+  is the heuristic's known false-positive shape, surfaced by a new
+  near-miss case, and the case stays in the corpus so it stays
+  visible.
 - `code_execution` mixed_case/combined 0.00: `Os.SyStEm(` does not
   execute in Python, and this scanner's threat model is executable code
   (a compromised tool handing the agent a snippet that escapes the
@@ -118,7 +139,7 @@ pipeline failing:
   detects, and v0.6.0 detects more of it. A benign sentence rewritten
   in fullwidth is indistinguishable from an evasive one, which is why
   this scanner stays opt-in.
-- `exfiltration` mixed_case 0.76: same defanging logic as `secrets`.
+- `exfiltration` mixed_case 0.77: same defanging logic as `secrets`.
   The scanner reuses the secrets and PII detectors, whose formats are
   case-sensitive for a reason: a mixed-case PEM header is not a working
   key block, and `AkIa...` is not a working AWS key.

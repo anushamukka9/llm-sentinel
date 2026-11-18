@@ -2,12 +2,23 @@
 
 Detects credentials that should never appear in a prompt or a model
 output: provider API keys (AWS, GitHub, Slack, Stripe, OpenAI, Anthropic),
-generic ``key = value`` assignments, and unlabelled high-entropy tokens.
+JSON Web Tokens, generic ``key = value`` assignments, and unlabelled
+high-entropy tokens.
 The AWS pattern covers both long-term key ids (``AKIA``) and temporary
 session key ids (``ASIA``) from STS. The OpenAI patterns cover the legacy
 ``sk-`` keys and the current project and service-account keys
 (``sk-proj-`` / ``sk-svcacct-``), whose bodies are hyphen-separated
 segments, so a single alphanumeric run never matches them.
+
+JSON Web Tokens (JWTs) are validated, not just pattern-matched, in the
+same spirit as the Luhn check on card numbers and the structural check
+on SSNs: a dotted three-segment candidate only flags when its header
+segment base64url-decodes to a JSON object carrying an ``alg`` claim
+and its payload segment decodes to a JSON object. A dotted string that
+fails either decode is not a JWT, however random it looks. The
+signature is never verified; a structurally valid token is a live
+session credential until it expires, signed or not, and the third
+segment only has to be present and non-empty.
 
 Limitations, stated plainly:
 - Regexes cover the well-known formats. Private or in-house key formats
@@ -15,12 +26,18 @@ Limitations, stated plainly:
 - The entropy heuristic (``looks_random``) is deliberately conservative and
   still produces false positives on UUIDs, hashes, and random-looking
   non-secrets. It also misses short or low-entropy secrets entirely.
+- Unsigned JWTs (``alg: none``, empty third segment) do not flag: with
+  no signature segment there is no credential material to leak, only
+  claims. A token whose header or payload is not a JSON object does
+  not flag either, even though some issuers bend that shape.
 - A key split across lines, redacted with asterisks, or shown only
   partially will not be caught. This scanner sees literal text, not intent.
 """
 
 from __future__ import annotations
 
+import base64
+import json
 import re
 
 from ..core import Finding, Scanner
@@ -79,6 +96,40 @@ _NAMED: list[tuple[str, re.Pattern[str], float]] = [
 # Bare tokens with no label nearby: word-boundary runs of token-ish chars.
 _BARE_TOKEN = re.compile(r"\b[A-Za-z0-9_\-+/=]{24,}\b")
 
+# A JWT candidate: three base64url segments joined by dots. The dots are
+# why the bare-token heuristic above never sees a whole token: it matches
+# one segment at a time, and a lone segment usually stays under its
+# entropy bar. Candidates are validated by jwt_valid before they flag.
+_JWT_CANDIDATE = re.compile(r"\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{8,}\b")
+
+
+def _decode_json_segment(segment: str) -> dict | None:
+    """Base64url-decode one JWT segment; return it when it is a JSON object."""
+    try:
+        raw = base64.urlsafe_b64decode(segment + "=" * (-len(segment) % 4))
+        value = json.loads(raw)
+    except ValueError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def jwt_valid(token: str) -> bool:
+    """True when ``token`` is shaped like a real JSON Web Token.
+
+    The token must split into exactly three non-empty segments, the
+    header segment must decode to a JSON object with an ``alg`` claim,
+    and the payload segment must decode to a JSON object. This is a
+    shape check, not a signature check: it proves the string is a JWT,
+    not that any particular issuer signed it.
+    """
+    parts = token.split(".")
+    if len(parts) != 3 or not all(parts):
+        return False
+    header = _decode_json_segment(parts[0])
+    if header is None or "alg" not in header:
+        return False
+    return _decode_json_segment(parts[1]) is not None
+
 
 class SecretsScanner(Scanner):
     """Flags API keys, tokens, and other credentials in text.
@@ -106,6 +157,12 @@ class SecretsScanner(Scanner):
         for label, pattern, score in self.patterns:
             for match in find_all(pattern, text):
                 findings.append(make_finding(self.name, match, score, f"Possible {label}"))
+                claimed.append(match.span())
+        # Validated JWTs claim their whole span, so the entropy pass
+        # below does not pile weaker per-segment findings on top.
+        for match in find_all(_JWT_CANDIDATE, text):
+            if jwt_valid(match.group()):
+                findings.append(make_finding(self.name, match, 0.95, "JSON Web Token (JWT)"))
                 claimed.append(match.span())
         if self.entropy_scan:
             for match in find_all(_BARE_TOKEN, text):

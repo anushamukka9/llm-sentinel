@@ -107,6 +107,25 @@ def test_plain_summary_is_quiet():
     assert scanner.scan("Here is the summary you asked for.") == []
 
 
+def test_jwt_flagged_on_output_side():
+    # The delegated secrets scanner carries the validated JWT check: a
+    # session token in a model response flags under the exfiltration
+    # name even with the entropy heuristic off.
+    import base64
+    import json
+
+    def seg(value):
+        return base64.urlsafe_b64encode(json.dumps(value).encode()).rstrip(b"=").decode()
+
+    token = ".".join(
+        [seg({"alg": "HS256", "typ": "JWT"}), seg({"sub": "user-123"}), "dGVzdHNpZ25hdHVyZQ"]
+    )
+    quiet = ExfiltrationScanner(entropy_scan=False)
+    findings = quiet.scan("here is the session token: " + token)
+    assert findings and any("JWT" in f.message for f in findings)
+    assert all(f.scanner == "exfiltration" for f in findings)
+
+
 def test_openai_project_key_flagged_on_output_side():
     # The delegated secrets scanner carries the fix: a project key in a
     # model response flags even with the entropy heuristic off.

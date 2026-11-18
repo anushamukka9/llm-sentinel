@@ -9,7 +9,7 @@ from .pii import PIIScanner, luhn_valid, ssn_valid
 from .prompt_injection import PromptInjectionScanner
 from .prompt_leak import PromptLeakScanner
 from .regex_scan import RegexScanner
-from .secrets import SecretsScanner
+from .secrets import SecretsScanner, jwt_valid
 from .token_limit import TokenLimitScanner, estimate_tokens
 from .toxicity import ToxicityScanner
 from .url_allowlist import URLAllowlistScanner
@@ -30,6 +30,7 @@ __all__ = [
     "ToxicityScanner",
     "URLAllowlistScanner",
     "estimate_tokens",
+    "jwt_valid",
     "luhn_valid",
     "ssn_valid",
     "default_scanners",

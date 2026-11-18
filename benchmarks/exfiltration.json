@@ -159,6 +159,14 @@
   {
    "text": "Passwords must be changed every ninety days per policy.",
    "expected": false
+  },
+  {
+   "text": "Here is the session token you asked for: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTEyMyIsIm5hbWUiOiJUZXN0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.dGVzdHNpZ25hdHVyZQ",
+   "expected": true
+  },
+  {
+   "text": "File aaaaaaaaaaaa.bbbbbbbbbbbb.cccccccccc was stored by the nightly job.",
+   "expected": false
   }
  ]
 }

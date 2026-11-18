@@ -1,8 +1,22 @@
 """Tests for SecretsScanner."""
 
-from llm_sentinel.scanners import SecretsScanner
+import base64
+import json
+
+from llm_sentinel.scanners import SecretsScanner, jwt_valid
 
 scanner = SecretsScanner()
+
+
+def _b64url(value) -> str:
+    raw = value if isinstance(value, bytes) else json.dumps(value).encode()
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+
+def _jwt(header=None, payload=None, signature="dGVzdHNpZ25hdHVyZQ") -> str:
+    header = {"alg": "HS256", "typ": "JWT"} if header is None else header
+    payload = {"sub": "user-123", "name": "Test User"} if payload is None else payload
+    return ".".join([_b64url(header), _b64url(payload), signature])
 
 
 def test_aws_access_key():
@@ -126,3 +140,70 @@ def test_entropy_scan_can_be_disabled():
 
 def test_demo_placeholder_not_flagged():
     assert scanner.scan("Use DEMO_KEY_123 for the demo.") == []
+
+
+def test_jwt_detected():
+    token = _jwt()
+    findings = scanner.scan("session token " + token + " keep it safe")
+    named = [f for f in findings if "JWT" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == token
+
+
+def test_jwt_detected_without_entropy_scan():
+    # The validated check stands on its own; before it existed, a JWT
+    # with the entropy heuristic off produced no finding at all, and
+    # with it on, at most a weak per-segment one.
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("token " + _jwt() + " here")
+    assert findings and "JWT" in findings[0].message
+
+
+def test_jwt_single_finding():
+    # The whole token is claimed, so the entropy heuristic must not add
+    # weaker findings for its individual segments.
+    findings = scanner.scan("token " + _jwt() + " here")
+    assert len(findings) == 1
+
+
+def test_jwt_in_bearer_header():
+    findings = scanner.scan("Authorization: Bearer " + _jwt())
+    assert findings and any("JWT" in f.message for f in findings)
+
+
+def test_jwt_valid_accepts_demo_shape():
+    assert jwt_valid(_jwt())
+
+
+def test_jwt_valid_rejects_wrong_segment_count():
+    assert not jwt_valid(_b64url({"alg": "HS256"}) + "." + _b64url({"sub": "x"}))
+    assert not jwt_valid(_jwt() + ".extra")
+
+
+def test_jwt_valid_rejects_header_without_alg():
+    assert not jwt_valid(_jwt(header={"typ": "JWT"}))
+
+
+def test_jwt_valid_rejects_non_object_payload():
+    assert not jwt_valid(_jwt(payload=["not", "an", "object"]))
+
+
+def test_jwt_valid_rejects_non_json_segments():
+    assert not jwt_valid("aaaaaaaaaaaa.bbbbbbbbbbbb.cccccccccc")
+
+
+def test_jwt_valid_rejects_empty_signature():
+    token = _b64url({"alg": "none"}) + "." + _b64url({"sub": "x"}) + "."
+    assert not jwt_valid(token)
+
+
+def test_dotted_non_jwt_not_flagged():
+    # Three dotted base64url-looking segments that do not decode to a
+    # JSON header and payload are not a token, however long they are.
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("blob aaaaaaaaaaaa.bbbbbbbbbbbb.cccccccccc stored") == []
+
+
+def test_semver_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("shipped version 1.2024.11 today") == []
