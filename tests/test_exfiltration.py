@@ -126,6 +126,17 @@ def test_jwt_flagged_on_output_side():
     assert all(f.scanner == "exfiltration" for f in findings)
 
 
+def test_gitlab_token_flagged_on_output_side():
+    # The delegated secrets scanner carries the platform token formats:
+    # a GitLab token in a model response flags even with the entropy
+    # heuristic off.
+    token = "glpat-" + "aB3dE5fG7hJ9" + "kL1mN3pQ"
+    quiet = ExfiltrationScanner(entropy_scan=False)
+    findings = quiet.scan("the ci token is " + token)
+    assert findings and any("GitLab" in f.message for f in findings)
+    assert all(f.scanner == "exfiltration" for f in findings)
+
+
 def test_openai_project_key_flagged_on_output_side():
     # The delegated secrets scanner carries the fix: a project key in a
     # model response flags even with the entropy heuristic off.

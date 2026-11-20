@@ -167,6 +167,18 @@
   {
    "text": "File aaaaaaaaaaaa.bbbbbbbbbbbb.cccccccccc was stored by the nightly job.",
    "expected": false
+  },
+  {
+   "text": "The bot leaked the CI token glpat-aB3dE5fG7hJ9kL1mN3pQ5rS7tU in its reply.",
+   "expected": true
+  },
+  {
+   "text": "Here is the model hub token: hf_aB3dE5fG7hJ9kL1mN3pQ5rS7tU9vW1xY3z",
+   "expected": true
+  },
+  {
+   "text": "GitLab tokens start with glpat- but I will not print one.",
+   "expected": false
   }
  ]
 }
