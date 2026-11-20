@@ -207,3 +207,104 @@ def test_dotted_non_jwt_not_flagged():
 def test_semver_not_flagged():
     s = SecretsScanner(entropy_scan=False)
     assert s.scan("shipped version 1.2024.11 today") == []
+
+
+# Platform tokens: bodies are built by concatenation, same as the fake
+# provider keys above, so no real-shaped literal sits in the source.
+_GITLAB = "glpat-" + "aB3dE5fG7hJ9" + "kL1mN3pQ"
+_HF = "hf_" + "aB3dE5fG7hJ9kL1mN3pQ" + "5rS7tU9vW1xY3z"
+_NPM = "npm_" + "aB3dE5fG7hJ9kL1mN3pQ" + "5rS7tU9vW1xY3zAb"
+_PYPI = "pypi-" + "AgEIcHlwaS5vcmc" + "aB3dE5fG7hJ9kL1mN3pQ" + "5rS7tU9vW1xY3zAbCd4Ef6Gh7"
+_SENDGRID = (
+    "SG." + "aB3dE5fG7hJ9kL1mN3pQ5r" + "." + "aB3dE5fG7hJ9kL1mN3pQ" + "5rS7tU9vW1xY3zAbCd4Ef6G"
+)
+
+
+def test_gitlab_token():
+    findings = scanner.scan("ci token " + _GITLAB + " in the log")
+    named = [f for f in findings if "GitLab" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _GITLAB
+
+
+def test_gitlab_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("ci token " + _GITLAB + " in the log")
+    assert findings and "GitLab" in findings[0].message
+
+
+def test_gitlab_single_finding():
+    findings = scanner.scan("ci token " + _GITLAB + " in the log")
+    assert len(findings) == 1
+
+
+def test_gitlab_prefix_alone_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("the glpat- prefix starts a GitLab token") == []
+
+
+def test_huggingface_token():
+    findings = scanner.scan("hub token " + _HF + " in the notebook")
+    named = [f for f in findings if "Hugging Face" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _HF
+
+
+def test_huggingface_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("hub token " + _HF + " in the notebook")
+    assert findings and "Hugging Face" in findings[0].message
+
+
+def test_huggingface_short_stub_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("short stub hf_aB3dE5 in the sample") == []
+
+
+def test_npm_token():
+    findings = scanner.scan("publish token " + _NPM + " used")
+    named = [f for f in findings if "npm" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _NPM
+
+
+def test_npm_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("publish token " + _NPM + " used")
+    assert findings and "npm" in findings[0].message
+
+
+def test_pypi_token():
+    findings = scanner.scan("upload token " + _PYPI + " in the notes")
+    named = [f for f in findings if "PyPI" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _PYPI
+
+
+def test_pypi_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("upload token " + _PYPI + " in the notes")
+    assert findings and "PyPI" in findings[0].message
+
+
+def test_pypi_prefix_alone_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("a pypi- token goes in the config, none here") == []
+
+
+def test_sendgrid_key():
+    findings = scanner.scan("mail key " + _SENDGRID + " sends")
+    named = [f for f in findings if "SendGrid" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _SENDGRID
+
+
+def test_sendgrid_key_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("mail key " + _SENDGRID + " sends")
+    assert findings and "SendGrid" in findings[0].message
+
+
+def test_sendgrid_single_segment_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("shape SG.aB3dE5fG7hJ9kL1mN3pQ5r only has one segment") == []

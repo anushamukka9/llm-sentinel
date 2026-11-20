@@ -2,6 +2,7 @@
 
 Detects credentials that should never appear in a prompt or a model
 output: provider API keys (AWS, GitHub, Slack, Stripe, OpenAI, Anthropic),
+platform tokens (GitLab, Hugging Face, npm, PyPI, SendGrid),
 JSON Web Tokens, generic ``key = value`` assignments, and unlabelled
 high-entropy tokens.
 The AWS pattern covers both long-term key ids (``AKIA``) and temporary
@@ -9,6 +10,12 @@ session key ids (``ASIA``) from STS. The OpenAI patterns cover the legacy
 ``sk-`` keys and the current project and service-account keys
 (``sk-proj-`` / ``sk-svcacct-``), whose bodies are hyphen-separated
 segments, so a single alphanumeric run never matches them.
+
+The platform token formats (GitLab ``glpat-``, Hugging Face ``hf_``,
+npm ``npm_``, PyPI ``pypi-``, SendGrid ``SG.<segment>.<segment>``) are
+prefix-anchored with strict body lengths, so the bare prefix or a
+short stub does not flag. The prefix is the tell: these strings have
+no innocent reason to appear in a prompt or a model output.
 
 JSON Web Tokens (JWTs) are validated, not just pattern-matched, in the
 same spirit as the Luhn check on card numbers and the structural check
@@ -81,6 +88,36 @@ _NAMED: list[tuple[str, re.Pattern[str], float]] = [
         "Google API key",
         re.compile(r"\bAIza[0-9A-Za-z\-_]{35}\b"),
         0.95,
+    ),
+    # Platform tokens: each format is a distinctive literal prefix plus
+    # a body of a fixed minimum length, so a bare prefix or a short
+    # stub in documentation text stays quiet.
+    (
+        "GitLab token",
+        re.compile(r"\bglpat-[A-Za-z0-9\-_]{20,}\b"),
+        0.98,
+    ),
+    (
+        "Hugging Face token",
+        re.compile(r"\bhf_[A-Za-z0-9]{34,}\b"),
+        0.97,
+    ),
+    (
+        "npm token",
+        re.compile(r"\bnpm_[A-Za-z0-9]{36,}\b"),
+        0.97,
+    ),
+    (
+        "PyPI token",
+        re.compile(r"\bpypi-[A-Za-z0-9\-_]{50,}\b"),
+        0.98,
+    ),
+    (
+        # SendGrid keys are two base64url segments after the SG. prefix:
+        # a 22 character id segment and a 43 character secret segment.
+        "SendGrid API key",
+        re.compile(r"\bSG\.[A-Za-z0-9\-_]{22}\.[A-Za-z0-9\-_]{43,}\b"),
+        0.97,
     ),
     (
         "Generic secret assignment",
