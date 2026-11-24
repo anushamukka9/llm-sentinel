@@ -308,3 +308,98 @@ def test_sendgrid_key_without_entropy_scan():
 def test_sendgrid_single_segment_not_flagged():
     s = SecretsScanner(entropy_scan=False)
     assert s.scan("shape SG.aB3dE5fG7hJ9kL1mN3pQ5r only has one segment") == []
+
+
+# Commerce and cloud tokens: bodies built by concatenation, same as
+# the fake keys above, so no real-shaped literal sits in the source.
+_DO = "dop_v1_" + "9f8e7d6c5b4a3928" + "1736455443322110" + "fedcba9876543210" + "0011223344556677"
+_SHOPIFY = "shpat_" + "9f8e7d6c5b4a3928" + "1736455443322110"
+_SQUARE = "sq0atp-" + "aB3dE5fG7hJ9" + "kL1mN3pQ5r"
+_TWILIO = "SK" + "9f8e7d6c5b4a3928" + "1736455443322110"
+
+
+def test_digitalocean_token():
+    findings = scanner.scan("deploy token " + _DO + " in the log")
+    named = [f for f in findings if "DigitalOcean" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _DO
+
+
+def test_digitalocean_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("deploy token " + _DO + " in the log")
+    assert findings and "DigitalOcean" in findings[0].message
+
+
+def test_digitalocean_single_finding():
+    findings = scanner.scan("deploy token " + _DO + " in the log")
+    assert len(findings) == 1
+
+
+def test_digitalocean_prefix_alone_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("the dop_v1_ prefix starts a DigitalOcean token") == []
+
+
+def test_digitalocean_non_hex_body_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("token dop_v1_zzzz7d6c5b4a39281736455443322110fedcba98 here") == []
+
+
+def test_shopify_token():
+    findings = scanner.scan("store token " + _SHOPIFY + " in the notes")
+    named = [f for f in findings if "Shopify" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _SHOPIFY
+
+
+def test_shopify_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("store token " + _SHOPIFY + " in the notes")
+    assert findings and "Shopify" in findings[0].message
+
+
+def test_shopify_prefix_alone_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("the shpat_ prefix starts a Shopify token") == []
+
+
+def test_square_token():
+    findings = scanner.scan("payments token " + _SQUARE + " used")
+    named = [f for f in findings if "Square" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _SQUARE
+
+
+def test_square_token_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("payments token " + _SQUARE + " used")
+    assert findings and "Square" in findings[0].message
+
+
+def test_square_short_stub_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("short stub sq0atp-aB3dE5 in the sample") == []
+
+
+def test_twilio_key():
+    findings = scanner.scan("sms key " + _TWILIO + " in the config")
+    named = [f for f in findings if "Twilio" in f.message]
+    assert named and named[0].score >= 0.9
+    assert named[0].matched_text == _TWILIO
+
+
+def test_twilio_key_without_entropy_scan():
+    s = SecretsScanner(entropy_scan=False)
+    findings = s.scan("sms key " + _TWILIO + " in the config")
+    assert findings and "Twilio" in findings[0].message
+
+
+def test_twilio_non_hex_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("note SKZZZZ7d6c5b4a39281736455443322110 is a label") == []
+
+
+def test_twilio_short_hex_not_flagged():
+    s = SecretsScanner(entropy_scan=False)
+    assert s.scan("sku SK9f8e7d6c on the shelf") == []

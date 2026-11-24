@@ -162,3 +162,20 @@ def test_entropy_scan_can_be_disabled():
     blob = "here 9f8e7d6c5b4a39281736455443322110fedcba987654 end"
     assert ExfiltrationScanner().scan(blob)
     assert ExfiltrationScanner(entropy_scan=False).scan(blob) == []
+
+
+def test_digitalocean_token_flagged_on_output_side():
+    # The delegated secrets scanner carries the new formats: a
+    # DigitalOcean token in a model response flags even with the
+    # entropy heuristic off.
+    token = (
+        "dop_v1_"
+        + "9f8e7d6c5b4a3928"
+        + "1736455443322110"
+        + "fedcba9876543210"
+        + "0011223344556677"
+    )
+    quiet = ExfiltrationScanner(entropy_scan=False)
+    findings = quiet.scan("the deploy token is " + token)
+    assert findings and any("DigitalOcean" in f.message for f in findings)
+    assert all(f.scanner == "exfiltration" for f in findings)

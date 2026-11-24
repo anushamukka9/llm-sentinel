@@ -92,7 +92,7 @@ cleaned text.
 | Scanner | What it catches |
 |---|---|
 | `prompt_injection` | Instruction overrides, delimiter smuggling (`<<SYS>>`, `[INST]`), jailbreak markers, role-play switches, system-prompt extraction |
-| `secrets` | AWS (long-term and temporary), GitHub, Slack, Stripe, OpenAI (legacy and project), Anthropic, Google keys; GitLab, Hugging Face, npm, PyPI, SendGrid tokens; JSON Web Tokens (structure-validated); generic `key = value` assignments; unlabelled high-entropy tokens |
+| `secrets` | AWS (long-term and temporary), GitHub, Slack, Stripe, OpenAI (legacy and project), Anthropic, Google keys; GitLab, Hugging Face, npm, PyPI, SendGrid, DigitalOcean, Shopify, Square, Twilio tokens; JSON Web Tokens (structure-validated); generic `key = value` assignments; unlabelled high-entropy tokens |
 | `pii` | Emails, phone numbers, US SSNs (structure-validated), credit card numbers (Luhn-validated) |
 | `toxicity` | Profanity wordlist, scored by density |
 | `gibberish` | Keyboard-mash and degenerated-model noise via consonant-ratio and entropy signals |
@@ -180,12 +180,12 @@ Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (401 cases):
+Results on the bundled corpora (410 cases):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
-| secrets | 51 | 1.00 | 1.00 | 1.00 |
+| secrets | 58 | 1.00 | 1.00 | 1.00 |
 | pii | 40 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
@@ -196,8 +196,8 @@ Results on the bundled corpora (401 cases):
 | regex | 20 | 1.00 | 1.00 | 1.00 |
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 45 | 1.00 | 1.00 | 1.00 |
-| **overall** | **401** | **1.00** | **1.00** | **1.00** |
+| exfiltration | 47 | 1.00 | 1.00 | 1.00 |
+| **overall** | **410** | **1.00** | **1.00** | **1.00** |
 
 Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are
