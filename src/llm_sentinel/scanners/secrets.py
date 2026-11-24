@@ -2,7 +2,8 @@
 
 Detects credentials that should never appear in a prompt or a model
 output: provider API keys (AWS, GitHub, Slack, Stripe, OpenAI, Anthropic),
-platform tokens (GitLab, Hugging Face, npm, PyPI, SendGrid),
+platform tokens (GitLab, Hugging Face, npm, PyPI, SendGrid,
+DigitalOcean, Shopify, Square, Twilio),
 JSON Web Tokens, generic ``key = value`` assignments, and unlabelled
 high-entropy tokens.
 The AWS pattern covers both long-term key ids (``AKIA``) and temporary
@@ -12,10 +13,14 @@ session key ids (``ASIA``) from STS. The OpenAI patterns cover the legacy
 segments, so a single alphanumeric run never matches them.
 
 The platform token formats (GitLab ``glpat-``, Hugging Face ``hf_``,
-npm ``npm_``, PyPI ``pypi-``, SendGrid ``SG.<segment>.<segment>``) are
-prefix-anchored with strict body lengths, so the bare prefix or a
-short stub does not flag. The prefix is the tell: these strings have
-no innocent reason to appear in a prompt or a model output.
+npm ``npm_``, PyPI ``pypi-``, SendGrid ``SG.<segment>.<segment>``,
+DigitalOcean ``dop_v1_``, Shopify ``shpat_``, Square ``sq0atp-``,
+Twilio ``SK`` plus hex) are prefix-anchored with strict body lengths,
+so the bare prefix or a short stub does not flag. The prefix is the
+tell: these strings have no innocent reason to appear in a prompt or
+a model output. The hex formats (DigitalOcean, Shopify, Twilio) only
+accept hex bodies, so a same-prefix string with non-hex characters
+stays quiet.
 
 JSON Web Tokens (JWTs) are validated, not just pattern-matched, in the
 same spirit as the Luhn check on card numbers and the structural check
@@ -118,6 +123,35 @@ _NAMED: list[tuple[str, re.Pattern[str], float]] = [
         "SendGrid API key",
         re.compile(r"\bSG\.[A-Za-z0-9\-_]{22}\.[A-Za-z0-9\-_]{43,}\b"),
         0.97,
+    ),
+    (
+        # DigitalOcean personal access tokens are the dop_v1_ prefix
+        # plus a 64 character hex body.
+        "DigitalOcean token",
+        re.compile(r"\bdop_v1_[0-9a-f]{64,}\b"),
+        0.98,
+    ),
+    (
+        # Shopify admin access tokens are the shpat_ prefix plus a
+        # 32 character hex body.
+        "Shopify access token",
+        re.compile(r"\bshpat_[0-9a-f]{32,}\b"),
+        0.98,
+    ),
+    (
+        # Square access tokens are the sq0atp- prefix plus a body of
+        # at least 22 characters.
+        "Square access token",
+        re.compile(r"\bsq0atp-[A-Za-z0-9\-_]{22,}\b"),
+        0.97,
+    ),
+    (
+        # Twilio API keys start with SK plus a 32 character hex body.
+        # The hex-only body keeps ordinary words starting with SK and
+        # short SKU-like strings quiet.
+        "Twilio API key",
+        re.compile(r"\bSK[0-9a-f]{32,}\b"),
+        0.96,
     ),
     (
         "Generic secret assignment",

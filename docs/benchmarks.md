@@ -8,13 +8,13 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (401 cases, measured 2026-11-20 against
-v0.7.4):
+Results on the bundled corpora (410 cases, measured 2026-11-24 against
+v0.7.5):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 |
-| secrets | 51 | 1.00 | 1.00 | 1.00 |
+| secrets | 58 | 1.00 | 1.00 | 1.00 |
 | pii | 40 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 |
@@ -25,8 +25,8 @@ v0.7.4):
 | regex | 20 | 1.00 | 1.00 | 1.00 |
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 45 | 1.00 | 1.00 | 1.00 |
-| **overall** | **401** | **1.00** | **1.00** | **1.00** |
+| exfiltration | 47 | 1.00 | 1.00 | 1.00 |
+| **overall** | **410** | **1.00** | **1.00** | **1.00** |
 
 The October 2026 expansion added 200 cases (175 to 375), weighted toward
 the newer scanners: exfiltration and prompt_injection doubled, and every
@@ -63,6 +63,25 @@ secret scanning blocks exact-length fakes in these files on push.
 The unit tests pin the exact documented lengths; the benchmark
 copies still prove the patterns fire on the format family.
 
+A third November addition (v0.7.5) covers four more formats the
+secrets scanner had no patterns for: DigitalOcean (`dop_v1_` plus
+hex), Shopify (`shpat_` plus hex), Square (`sq0atp-`), and Twilio
+(`SK` plus hex). Nine cases: three positives and four near-miss
+negatives in `secrets` (a bare `dop_v1_` prefix, a short `shpat_`
+stub, an `sq0atp-` mention with no token, an `SK` stock label), one
+positive in `exfiltration`, which inherits the formats through its
+delegated secrets scanner, and one negative there. The hex formats
+only accept hex bodies, so a same-prefix string with non-hex
+characters stays quiet. Same corpus quirk as v0.7.4: the benchmark
+fakes use over-length bodies, because GitHub secret scanning can
+block exact-length fakes in these files on push. The unit tests pin
+the exact documented lengths. One format has no benchmark positive
+at all: Shopify. Verified directly, GitHub secret scanning blocks a
+literal `shpat_` fake at 32, 40, and 64 hex characters alike, so no
+over-length trick works there. The Shopify pattern is covered by
+unit tests instead, where the fake is built by concatenation and
+never sits in the source as a literal.
+
 ## What these numbers actually mean
 
 A scanner "passes" a case when it produces at least one finding for an
@@ -94,12 +113,12 @@ pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (401 cases, measured 2026-11-20 against v0.7.4):
+Results (410 cases, measured 2026-11-24 against v0.7.5):
 
 | scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
 |---|---|---|---|---|---|---|---|---|
 | prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| secrets | 51 | 1.00 | 1.00 | 1.00 | 1.00 | 0.86 | 0.86 | 0.98 |
+| secrets | 58 | 1.00 | 1.00 | 1.00 | 1.00 | 0.84 | 0.84 | 0.98 |
 | pii | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
 | gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
@@ -110,15 +129,15 @@ Results (401 cases, measured 2026-11-20 against v0.7.4):
 | regex | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
 | obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 45 | 1.00 | 1.00 | 1.00 | 1.00 | 0.79 | 0.79 | 1.00 |
-| **overall** | **401** | **1.00** | **1.00** | **1.00** | **1.00** | **0.88** | **0.88** | **0.93** |
+| exfiltration | 47 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
+| **overall** | **410** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
 evasion in every row. The cells that are not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
-- `secrets` mixed_case 0.86 (was 0.83 in v0.7.3): the transform
+- `secrets` mixed_case 0.84 (was 0.86 in v0.7.4): the transform
   defangs the secret. A mixed-case `AkIa...` is not a well-formed AWS
   key, so the scanner is right to stay quiet. The cases that survive
   are the ones whose format is case-insensitive by design (generic
@@ -130,7 +149,12 @@ pipeline failing:
   patterns stay quiet on the mangled text (verified directly: with
   the entropy heuristic off, all five mangled cases scan clean), but
   their long bodies still trip the entropy heuristic as unlabelled
-  tokens, which is why this cell ticked up instead of down.
+  tokens, which is why this cell ticked up instead of down. The
+  v0.7.5 formats pull the other way: their prefixes are
+  case-sensitive and the hex bodies only accept lowercase hex, so a
+  case-mangled copy is not a working token anymore, and verified
+  directly, all four new formats scan clean when case-mangled,
+  with the entropy heuristic off. That is why this cell ticked down instead.
 - `secrets` neg_ok 0.98 (was 1.00 before the JWT cases): the one
   transformed negative that flags is not the JWT check misfiring. The
   mixed-case transform rewrites a benign dotted blob's payload segment
@@ -161,12 +185,13 @@ pipeline failing:
   detects, and v0.6.0 detects more of it. A benign sentence rewritten
   in fullwidth is indistinguishable from an evasive one, which is why
   this scanner stays opt-in.
-- `exfiltration` mixed_case 0.79 (was 0.77 in v0.7.3): same
+- `exfiltration` mixed_case 0.76 (was 0.79 in v0.7.4): same
   defanging logic as `secrets`, plus the same entropy-heuristic
   pickup on the new platform token bodies.
   The scanner reuses the secrets and PII detectors, whose formats are
   case-sensitive for a reason: a mixed-case PEM header is not a working
-  key block, and `AkIa...` is not a working AWS key.
+  key block, and `AkIa...` is not a working AWS key. The v0.7.5
+  DigitalOcean cases in this corpus behave the same way.
 
 Two real bugs came out of building this eval, both fixed in v0.4.0:
 

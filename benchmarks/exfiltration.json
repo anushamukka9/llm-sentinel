@@ -180,5 +180,13 @@
    "text": "GitLab tokens start with glpat- but I will not print one.",
    "expected": false
   }
+,  {
+   "text": "Here is the deploy token: dop_v1_9f8e7d6c5b4a39281736455443322110fedcba987654321000112233445566778899aabb",
+   "expected": true
+  },
+  {
+   "text": "Shopify tokens start with shpat_ but I will not print one.",
+   "expected": false
+  }
  ]
 }
