@@ -76,11 +76,25 @@ class TestTransforms:
                 expected = mixed_case(probe) if name in ("mixed_case", "combined") else probe
                 assert normalize_text(fn(probe)) == expected, (name, probe)
 
+    def test_tag_smuggle_round_trips(self):
+        out = TRANSFORMS["tag_smuggle"]("hello world from here")
+        assert out != "hello world from here"
+        assert any(0xE0000 <= ord(c) <= 0xE007F for c in out)
+        assert normalize_text(out) == "hello world from here"
+
+    def test_combining_marks_round_trip(self):
+        out = TRANSFORMS["combining_marks"]("hello world from here")
+        assert out != "hello world from here"
+        assert "\u0301" in out
+        assert normalize_text(out) == "hello world from here"
+
     def test_transforms_registered(self):
         assert set(TRANSFORMS) == {
             "zero_width",
             "fullwidth",
             "homoglyph",
+            "tag_smuggle",
+            "combining_marks",
             "mixed_case",
             "combined",
         }

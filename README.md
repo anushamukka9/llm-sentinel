@@ -65,10 +65,13 @@ result = vault.scan(model_output)
 
 Before scanning, the Vault normalizes the text: zero-width characters
 are stripped, fullwidth forms are folded (NFKC), and common cross-script
-homoglyphs are mapped to Latin. This defeats the cheapest evasion
-tricks, like slipping a zero-width space into "ignore". Finding offsets
-are translated back to your original text, so redaction still works on
-what you passed in.
+homoglyphs are mapped to Latin. Since v0.7.6 the pass also strips
+Unicode tag characters (the ASCII smuggling block), variation
+selectors, bidi isolates, and combining diacritical marks, and folds
+accented lookalikes to their base letters. This defeats the cheapest
+evasion tricks, like slipping a zero-width space into "ignore". Finding
+offsets are translated back to your original text, so redaction still
+works on what you passed in.
 
 ```python
 from llm_sentinel import normalize_text
@@ -180,7 +183,7 @@ Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (410 cases):
+Results on the bundled corpora (413 cases):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
@@ -194,10 +197,10 @@ Results on the bundled corpora (410 cases):
 | url_allowlist | 24 | 1.00 | 1.00 | 1.00 |
 | token_limit | 16 | 1.00 | 1.00 | 1.00 |
 | regex | 20 | 1.00 | 1.00 | 1.00 |
-| obfuscation | 26 | 1.00 | 1.00 | 1.00 |
+| obfuscation | 29 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 47 | 1.00 | 1.00 | 1.00 |
-| **overall** | **410** | **1.00** | **1.00** | **1.00** |
+| **overall** | **413** | **1.00** | **1.00** | **1.00** |
 
 Take these numbers for what they are: a smoke test proving the patterns
 fire on the obvious cases, not a safety certification. The corpora are
@@ -209,8 +212,10 @@ Methodology, what the numbers do not measure, and how to add cases:
 The table above measures the scanners; the adversarial eval measures the
 pipeline. `python -m llm_sentinel.adversarial_eval` runs every case
 through a real Vault (normalization on) clean and under evasion tricks
-(zero-width, fullwidth, homoglyphs, mixed case, all stacked). Headline
-result: normalization defeats zero-width, fullwidth, and homoglyph
+(zero-width, fullwidth, homoglyphs, tag characters, combining marks,
+mixed case, all stacked). Headline
+result: normalization defeats zero-width, fullwidth, homoglyph, tag
+character, and combining mark
 evasion at 1.00 almost everywhere; the few misses are documented honestly
 in [docs/benchmarks.md](docs/benchmarks.md), including the two real bugs
 this eval caught (uppercased homoglyphs, mixed-case URL schemes).
@@ -326,7 +331,8 @@ See `examples/README.md` for the exact commands.
 - Pattern matching is not understanding. Novel phrasings, non-English
   attacks, and paraphrased overrides will get through the
   prompt-injection scanner. The cheap typographic tricks (zero-width
-  characters, fullwidth lookalikes, common homoglyphs) are normalized
+  characters, fullwidth lookalikes, common homoglyphs, tag characters,
+  combining marks) are normalized
   away by the Vault before scanning; heavy leetspeak and full Unicode
   confusable coverage are still out of scope.
 - The secrets entropy heuristic misses short secrets and flags some

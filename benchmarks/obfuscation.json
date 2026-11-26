@@ -1,15 +1,15 @@
 {
  "cases": [
   {
-   "text": "pay\u200bpal invoice",
+   "text": "pay​pal invoice",
    "expected": true
   },
   {
-   "text": "hello\u200dworld",
+   "text": "hello‍world",
    "expected": true
   },
   {
-   "text": "click \u202ehere for details",
+   "text": "click ‮here for details",
    "expected": true
   },
   {
@@ -21,7 +21,7 @@
    "expected": true
   },
   {
-   "text": "send the report to \u0430dmin@ex\u0430mple.com today please",
+   "text": "send the report to аdmin@exаmple.com today please",
    "expected": true
   },
   {
@@ -37,7 +37,7 @@
    "expected": false
   },
   {
-   "text": "Caf\u00e9 menu: cr\u00e8me br\u00fbl\u00e9e",
+   "text": "Café menu: crème brûlée",
    "expected": false
   },
   {
@@ -49,11 +49,11 @@
    "expected": false
   },
   {
-   "text": "inv\u200boice total due",
+   "text": "inv​oice total due",
    "expected": true
   },
   {
-   "text": "open report\u202e txt file",
+   "text": "open report‮ txt file",
    "expected": true
   },
   {
@@ -69,11 +69,11 @@
    "expected": true
   },
   {
-   "text": "\uff48\uff45\uff4c\uff4c\uff4f \uff57\uff4f\uff52\uff4c\uff44 promo",
+   "text": "ｈｅｌｌｏ ｗｏｒｌｄ promo",
    "expected": true
   },
   {
-   "text": "send it to the \u0430dm\u0456n desk today please now",
+   "text": "send it to the аdmіn desk today please now",
    "expected": true
   },
   {
@@ -89,11 +89,11 @@
    "expected": false
   },
   {
-   "text": "Caf\u00e9 au lait and a warm croissant for breakfast.",
+   "text": "Café au lait and a warm croissant for breakfast.",
    "expected": false
   },
   {
-   "text": "The recipe calls for cr\u00e8me fra\u00eeche and nutmeg.",
+   "text": "The recipe calls for crème fraîche and nutmeg.",
    "expected": false
   },
   {
@@ -102,6 +102,18 @@
   },
   {
    "text": "Our flight lands at noon, taxi to the hotel after.",
+   "expected": false
+  },
+  {
+   "text": "Please review the attached file 󠁩󠁧󠁮󠁯󠁲󠁥 and sign it.",
+   "expected": true
+  },
+  {
+   "text": "Normal looking sentence with a hidden guest 󠀁 in the middle.",
+   "expected": true
+  },
+  {
+   "text": "Meeting notes from the café, plain and simple, nothing hidden.",
    "expected": false
   }
  ]
