@@ -8,8 +8,8 @@ cases). Run them yourself:
 python -m llm_sentinel.benchmark
 ```
 
-Results on the bundled corpora (410 cases, measured 2026-11-24 against
-v0.7.5):
+Results on the bundled corpora (413 cases, measured 2026-11-25 against
+v0.7.6):
 
 | scanner | n | precision | recall | F1 |
 |---|---|---|---|---|
@@ -23,10 +23,10 @@ v0.7.5):
 | url_allowlist | 24 | 1.00 | 1.00 | 1.00 |
 | token_limit | 16 | 1.00 | 1.00 | 1.00 |
 | regex | 20 | 1.00 | 1.00 | 1.00 |
-| obfuscation | 26 | 1.00 | 1.00 | 1.00 |
+| obfuscation | 29 | 1.00 | 1.00 | 1.00 |
 | prompt_leak | 25 | 1.00 | 1.00 | 1.00 |
 | exfiltration | 47 | 1.00 | 1.00 | 1.00 |
-| **overall** | **410** | **1.00** | **1.00** | **1.00** |
+| **overall** | **413** | **1.00** | **1.00** | **1.00** |
 
 The October 2026 expansion added 200 cases (175 to 375), weighted toward
 the newer scanners: exfiltration and prompt_injection doubled, and every
@@ -82,6 +82,20 @@ over-length trick works there. The Shopify pattern is covered by
 unit tests instead, where the fake is built by concatenation and
 never sits in the source as a literal.
 
+A fourth November addition (v0.7.6) is the unicode normalization
+pass, and it adds only three cases here, all in `obfuscation`: two
+positives whose text hides tag characters (the obfuscation scanner
+sees the raw text and flags the format characters directly), and one
+accented near-miss negative that stays quiet. The normalization work
+itself is a pipeline property, not a raw-scanner property, so its
+real numbers live in the adversarial eval below: two new transforms
+(tag smuggling and combining marks) joined the eval in this version,
+and both score 1.00 recall in every row. The unit tests in
+`tests/test_normalize_unicode.py` pin the rest: variation selectors,
+bidi isolates, invisible operators, accented lookalikes folding to
+base letters, and clean text (accents, emoji, joiner sequences)
+producing no findings.
+
 ## What these numbers actually mean
 
 A scanner "passes" a case when it produces at least one finding for an
@@ -108,32 +122,39 @@ python -m llm_sentinel.adversarial_eval
 
 The transforms are deterministic string munging in
 `llm_sentinel/adversarial.py`: zero-width injection, fullwidth folding,
-homoglyph swaps, mixed case, and all of them stacked (combined). Same
+homoglyph swaps, tag character smuggling, combining marks, mixed case,
+and all of them stacked (combined). Same
 pass definition as above: a finding on an expected-positive case, or
 silence on a negative one. `neg_ok` is the share of transformed benign
 cases that stayed clean (normalization must not invent findings).
 
-Results (410 cases, measured 2026-11-24 against v0.7.5):
+Results (413 cases, measured 2026-11-25 against v0.7.6):
 
-| scanner | n | clean | zero_width | fullwidth | homoglyph | mixed_case | combined | neg_ok |
-|---|---|---|---|---|---|---|---|---|
-| prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| secrets | 58 | 1.00 | 1.00 | 1.00 | 1.00 | 0.84 | 0.84 | 0.98 |
-| pii | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| ban_topics | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| code_execution | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 0.00 | 0.00 | 1.00 |
-| url_allowlist | 24 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| token_limit | 16 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| regex | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.60 |
-| obfuscation | 26 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.24 |
-| prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| exfiltration | 47 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
-| **overall** | **410** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.93** |
+| scanner | n | clean | zero_width | fullwidth | homoglyph | tag_smuggle | combining_marks | mixed_case | combined | neg_ok |
+|---|---|---|---|---|---|---|---|---|---|---|
+| prompt_injection | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| secrets | 58 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.84 | 0.84 | 0.99 |
+| pii | 40 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| toxicity | 28 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| gibberish | 22 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| ban_topics | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| code_execution | 32 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.00 | 0.00 | 1.00 |
+| url_allowlist | 24 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| token_limit | 16 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| regex | 20 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.71 |
+| obfuscation | 29 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.94 | 0.31 |
+| prompt_leak | 25 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+| exfiltration | 47 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 0.76 | 0.76 | 1.00 |
+| **overall** | **413** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **1.00** | **0.87** | **0.87** | **0.94** |
 
 The headline: normalization defeats zero-width, fullwidth, and homoglyph
-evasion in every row. The cells that are not 1.00 are worth reading
+evasion in every row, and the two transforms added in v0.7.6 (tag
+smuggling and combining marks) score 1.00 in every row too. One honest
+exception inside that headline: `obfuscation` combined is 0.94 (16 of
+17 positives), because that scanner opts out of normalization on
+purpose and sees the raw stacked text, and one case slips past it
+under the full trick pile. The cells that are
+not 1.00 are worth reading
 closely, because most of them are the eval being honest, not the
 pipeline failing:
 
@@ -155,8 +176,9 @@ pipeline failing:
   case-mangled copy is not a working token anymore, and verified
   directly, all four new formats scan clean when case-mangled,
   with the entropy heuristic off. That is why this cell ticked down instead.
-- `secrets` neg_ok 0.98 (was 1.00 before the JWT cases): the one
-  transformed negative that flags is not the JWT check misfiring. The
+- `secrets` neg_ok 0.99 (0.98 in v0.7.5; the pool now covers seven
+  transforms instead of five): the transformed negatives that flag are
+  not the JWT check misfiring. The
   mixed-case transform rewrites a benign dotted blob's payload segment
   into a mixed-case string diverse enough to trip the older entropy
   heuristic. With the entropy heuristic off, the transformed text is
@@ -169,7 +191,8 @@ pipeline failing:
   (a compromised tool handing the agent a snippet that escapes the
   sandbox when run). Case-mangled variants are correctly ignored. If you
   want those flagged anyway, run prompt_injection alongside it.
-- `regex` neg_ok 0.60: the bundled `required=[r"\bhello\b"]` pattern is
+- `regex` neg_ok 0.71 (0.60 in v0.7.5, same pooling change): the
+  bundled `required=[r"\bhello\b"]` pattern is
   case-sensitive, so mixed-case benign text fails the required pattern.
   That is user configuration, not a library bug; add `(?i)` to your own
   patterns if you want case-insensitive matching.
@@ -179,12 +202,15 @@ pipeline failing:
   survives that the document-level tripwire misses, and re-checks
   literal escapes and encoded blobs on a folded copy of the text with
   spans mapped back to the original.
-- `obfuscation` neg_ok 0.24: by construction, and lower than it used
-  to be. The transforms inject zero-width, fullwidth, and homoglyph
-  characters into benign text, which is exactly what this scanner
+- `obfuscation` neg_ok 0.31: by construction. The transforms inject
+  zero-width, fullwidth, homoglyph, and (since v0.7.6) tag characters
+  into benign text, which is exactly what this scanner
   detects, and v0.6.0 detects more of it. A benign sentence rewritten
   in fullwidth is indistinguishable from an evasive one, which is why
-  this scanner stays opt-in.
+  this scanner stays opt-in. The combining-marks transform is the one
+  exception: it does not trip this scanner at all (precision and
+  recall both 1.00 on its row), because a combining mark is ordinary
+  typography in plenty of real writing.
 - `exfiltration` mixed_case 0.76 (was 0.79 in v0.7.4): same
   defanging logic as `secrets`, plus the same entropy-heuristic
   pickup on the new platform token bodies.

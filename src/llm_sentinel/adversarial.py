@@ -2,9 +2,11 @@
 
 These are the cheap typographic tricks from the normalizer's threat model:
 zero-width characters slipped inside words, fullwidth lookalikes, common
-cross-script homoglyphs, and mixed case. Every transform is deterministic
-(same input gives the same output on every run), so the eval table is
-reproducible without storing transformed fixtures.
+cross-script homoglyphs, and mixed case. Two more joined in v0.7.6: tag
+characters (the ASCII smuggling block) slipped inside words, and
+combining diacritical marks sprinkled after letters. Every transform is
+deterministic (same input gives the same output on every run), so the
+eval table is reproducible without storing transformed fixtures.
 
 What this is not: paraphrase, heavy leetspeak, non-English attacks, or
 meaning-level evasion. Those need a real red team, not string munging.
@@ -79,6 +81,47 @@ def homoglyph_swap(text: str) -> str:
     return "".join(_HOMOGLYPHS.get(ch, ch) for ch in text)
 
 
+# Tag characters: the invisible block (U+E0000 to U+E007F) whose code
+# points mirror ASCII. A human sees nothing; a naive matcher sees a
+# broken word. These are the characters behind ASCII smuggling.
+_TAG_CHARS = ["\U000e0001", "\U000e0069", "\U000e007f"]
+
+
+def tag_smuggle(text: str, probability: float = 0.6) -> str:
+    """Slip a tag character inside some words, at random positions.
+
+    Same shape as ``zero_width_inject`` (short words left alone,
+    deterministic per input); only the invisible character family
+    differs.
+    """
+    rng = _rng(text, "tag_smuggle")
+    out: list[str] = []
+    for part in re.split(r"(\s+)", text):
+        if len(part) >= 4 and not part.isspace() and rng.random() < probability:
+            pos = rng.randrange(1, len(part))
+            part = part[:pos] + rng.choice(_TAG_CHARS) + part[pos:]
+        out.append(part)
+    return "".join(out)
+
+
+def combining_marks(text: str, probability: float = 0.6) -> str:
+    """Sprinkle combining diacritical marks after letters inside words.
+
+    A combining acute after a letter renders as an accent on that
+    letter, so the word still reads fine to a human, but the raw code
+    points no longer match any plain pattern. Short words (under 4
+    chars) are left alone. Deterministic per input.
+    """
+    rng = _rng(text, "combining_marks")
+    out: list[str] = []
+    for part in re.split(r"(\s+)", text):
+        if len(part) >= 4 and not part.isspace() and rng.random() < probability:
+            pos = rng.randrange(1, len(part))
+            part = part[:pos] + "\u0301" + part[pos:]
+        out.append(part)
+    return "".join(out)
+
+
 def mixed_case(text: str) -> str:
     """Alternate upper/lower across the alphabetic characters."""
     out: list[str] = []
@@ -106,6 +149,8 @@ TRANSFORMS: dict[str, Callable[[str], str]] = {
     "zero_width": zero_width_inject,
     "fullwidth": to_fullwidth,
     "homoglyph": homoglyph_swap,
+    "tag_smuggle": tag_smuggle,
+    "combining_marks": combining_marks,
     "mixed_case": mixed_case,
     "combined": combined,
 }

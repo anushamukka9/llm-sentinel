@@ -11,8 +11,10 @@ its score is at or above that scanner's threshold. Thresholds default to
 0.5 and can be tuned per scanner.
 
 Before scanning, the Vault normalizes the text (``normalize=True``, the
-default): zero-width characters are stripped, fullwidth forms are folded
-by NFKC, and common cross-script homoglyphs are mapped to Latin. This
+default): zero-width characters, tag characters, variation selectors,
+and combining marks are stripped, fullwidth forms are folded
+by NFKC, accented lookalikes fold to their base letters, and common
+cross-script homoglyphs are mapped to Latin. This
 defeats the cheapest typographic evasion tricks. Finding offsets are
 translated back to the original text, so findings and redaction always
 refer to what you passed in. Pass ``normalize=False`` if you need raw
